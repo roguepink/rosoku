@@ -6,7 +6,7 @@ import { CANDLES, SIZES, SWAYS, WARMTH } from './candles.js';
 const $ = (id) => document.getElementById(id);
 const KEY = 'itto-v1';
 const SLEEPS = [
-  { min: 0, name: 'なし' }, { min: 15, name: '15分' }, { min: 30, name: '30分' },
+  { min: 0, name: 'なし' }, { min: 5, name: '5分' }, { min: 10, name: '10分' }, { min: 15, name: '15分' }, { min: 30, name: '30分' },
   { min: 40, name: 'お線香一本（40分）' }, { min: 60, name: '60分' }, { min: 90, name: '90分' },
 ];
 const TOUCH_TO_LIGHT = 'ふれると、灯がともります';
