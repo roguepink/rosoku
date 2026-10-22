@@ -28,16 +28,16 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
 
 /* はじめの名前 */
 .title {
-  position: fixed; left: 50%; top: 28%; transform: translateX(-50%);
-  writing-mode: vertical-rl; font-size: 22px; letter-spacing: 0.6em; color: var(--ink);
+  position: fixed; left: 50%; top: 22%; transform: translateX(-50%);
+  writing-mode: vertical-rl; font-size: 26px; letter-spacing: 0.6em; color: var(--ink);
   opacity: 0; transition: opacity 2.4s var(--ease); pointer-events: none;
 }
-.title.on { opacity: 0.32; }
+.title.on { opacity: 0.42; }
 .hint, .toast {
   position: fixed; left: 0; right: 0; bottom: calc(18% + var(--sab)); margin: 0; text-align: center;
-  font-size: 14px; color: var(--ink); opacity: 0; transition: opacity 1.6s var(--ease); pointer-events: none; padding: 0 24px;
+  font-size: 15px; color: var(--ink); opacity: 0; transition: opacity 1.6s var(--ease); pointer-events: none; padding: 0 24px;
 }
-.hint.on { opacity: 0.5; }
+.hint.on { opacity: 0.65; }
 .toast { bottom: auto; top: calc(14% + var(--sat)); font-size: 15px; letter-spacing: 0.3em; }
 .toast.on { opacity: 0.6; }
 .relight {
@@ -49,7 +49,8 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
 /* 操作の部品 */
 .ui { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s var(--ease); }
 .ui.on { opacity: 1; transition-duration: 0.45s; }
-.ui.on .bar, .ui.on .sheet:not([hidden]) { pointer-events: auto; }
+.ui.on .bar, .ui.on .sheet:not([hidden]), .ui.fading .bar, .ui.fading .sheet:not([hidden]) { pointer-events: auto; }
+body.nocursor { cursor: none; }
 
 .bar {
   position: absolute; left: 0; right: 0; bottom: 0;
@@ -59,8 +60,9 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
 }
 .bar button {
   min-width: 64px; min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-  font-size: 13px; color: var(--ink); opacity: 0.82;
+  font-size: 14px; color: var(--ink); opacity: 0.85;
 }
+.bar button.playing svg { color: var(--amber); }
 .bar button.cur { color: var(--amber); opacity: 1; }
 .bar button span, .choices button, .lab, .link { white-space: nowrap; }
 .bar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
@@ -80,9 +82,11 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
 .choices.wrap { flex-wrap: wrap; justify-content: flex-start; gap: 4px 10px; }
 .choices button { min-height: 48px; min-width: 48px; padding: 0 6px; font-size: 15px; opacity: 0.72; border-bottom: 1px solid transparent; }
 .choices button[aria-pressed="true"] { color: var(--amber); opacity: 1; border-bottom-color: var(--amber); }
-.dots button { font-size: 11px; letter-spacing: 0.05em; }
+.dots button { display: flex; align-items: center; justify-content: center; }
+.dots i { display: block; border-radius: 50%; background: currentColor; }
+.big { width: 100%; min-height: 56px; font-size: 17px; letter-spacing: 0.3em; color: var(--amber); }
 .link { min-height: 48px; padding: 0 4px; font-size: 14px; opacity: 0.72; border-bottom: 1px solid var(--line); }
-.note { font-size: 12.5px; line-height: 1.7; opacity: 0.6; margin: 8px 0 10px; letter-spacing: 0.04em; }
+.note { font-size: 14px; line-height: 1.75; opacity: 0.75; word-break: auto-phrase; text-wrap: pretty; margin: 8px 0 10px; letter-spacing: 0.04em; }
 .note:empty { display: none; }
 .credit { font-size: 11px; color: var(--beni); opacity: 0.7; text-align: right; margin: 10px 0 0; letter-spacing: 0.2em; }
 
@@ -99,20 +103,20 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 
 .thumbs { display: flex; gap: 12px; overflow-x: auto; touch-action: pan-x; padding-bottom: 2px; scrollbar-width: none; }
 .thumbs::-webkit-scrollbar { display: none; }
-.thumbs button { flex: 0 0 auto; width: 76px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; opacity: 0.75; }
-.thumbs img { width: 76px; height: 100px; object-fit: cover; display: block; border-bottom: 1px solid transparent; background: #050403; }
+.thumbs button { flex: 0 0 auto; width: 80px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; letter-spacing: 0; opacity: 0.78; }
+.thumbs img { width: 80px; height: 105px; object-fit: cover; display: block; border-bottom: 1px solid transparent; background: #050403; }
 .thumbs button[aria-pressed="true"] { color: var(--amber); opacity: 1; }
 .thumbs button[aria-pressed="true"] img { border-bottom-color: var(--amber); }
 
 /* 横向き(スマホを横に倒して立てたとき): 右のふちに たてに並べる */
 @media (orientation: landscape) and (max-height: 560px) {
   .bar {
-    left: auto; top: 0; bottom: 0; width: calc(84px + var(--sar)); flex-direction: column; justify-content: center; gap: 4px;
+    left: auto; top: 0; bottom: 0; width: calc(96px + var(--sar)); flex-direction: column; justify-content: center; gap: 4px;
     padding: calc(8px + var(--sat)) calc(8px + var(--sar)) calc(8px + var(--sab)) 8px;
     background: linear-gradient(to left, rgba(0,0,0,0.75), rgba(0,0,0,0));
   }
-  .bar button { min-height: 56px; font-size: 12px; letter-spacing: 0.02em; }
-  .drawer { left: auto; top: 0; bottom: 0; right: calc(84px + var(--sar)); align-items: center; }
+  .bar button { min-height: 56px; font-size: 13px; letter-spacing: 0.02em; }
+  .drawer { left: auto; top: 0; bottom: 0; right: calc(96px + var(--sar)); align-items: center; }
   .sheet { width: 380px; max-width: calc(100vw - 260px); max-height: 92vh; max-height: 92dvh; border: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
   .title { top: 12%; }
   .hint { bottom: calc(10% + var(--sab)); }

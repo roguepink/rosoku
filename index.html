@@ -47,22 +47,25 @@
       <div class="choices wrap" id="sleepChoices"></div>
     </section>
 
+    <!-- 音楽 -->
+    <section id="music" class="sheet" hidden aria-label="音楽">
+      <div class="row"><button id="mplay" class="big">流す</button></div>
+      <div class="row"><span class="lab">音の大きさ</span><input id="vol" type="range" min="0" max="100" step="1" aria-label="音の大きさ"></div>
+      <div class="row"><span class="lab">曲の順番</span><div class="choices" id="orderChoices"></div></div>
+      <ol id="tracks" class="tracks"></ol>
+    </section>
+
     <!-- ととのえる -->
     <section id="adjust" class="sheet" hidden aria-label="ととのえる">
       <div class="row"><span class="lab">ゆれ</span><div class="choices" id="swayChoices"></div></div>
       <div class="row"><span class="lab">大きさ</span><div class="choices" id="sizeChoices"></div></div>
       <div class="row"><span class="lab">明るさ</span><div class="choices dots" id="brightChoices"></div></div>
       <div class="row"><span class="lab">色あい</span><div class="choices" id="warmChoices"></div></div>
-      <div id="musicRows" hidden>
-        <div class="row"><span class="lab">音の大きさ</span><input id="vol" type="range" min="0" max="100" step="1" aria-label="音の大きさ"></div>
-        <div class="row"><span class="lab">曲の順番</span><div class="choices" id="orderChoices"></div></div>
-        <ol id="tracks" class="tracks"></ol>
-      </div>
       <div class="row end">
         <button id="out" class="link">灯を消す</button>
         <button id="fs" class="link" hidden>画面いっぱいにする</button>
       </div>
-      <p id="lineNote" class="note" hidden>LINE の中ではなく、ブラウザで開くと、画面が消えずに ずっと表示できます。</p>
+      <p id="lineNote" class="note" hidden>LINEの中ではなく、ブラウザで開くと、画面が消えずにずっと表示できます。</p>
       <p id="wakeNote" class="note" hidden>しばらくすると画面が消えるときは、スマホの「自動ロック」を長めにしてください。</p>
       <p id="installNote" class="note"></p>
       <p class="credit">一灯 ・ ROGUE PINK</p>
@@ -71,7 +74,7 @@
 
   <nav id="bar" class="bar" aria-label="操作">
     <button data-open="pick"><svg viewBox="0 0 24 24"><path d="M12 3.2c1.6 2 2.2 3.3 2.2 4.4a2.2 2.2 0 0 1-4.4 0c0-1.1.6-2.4 2.2-4.4Z"/><path d="M9.5 11.5h5v9h-5z"/><path d="M12 9.8v1.7"/></svg><span>ろうそく</span></button>
-    <button id="musicBtn" hidden><svg viewBox="0 0 24 24"><path d="M9 18.5V6l10-2v12"/><circle cx="6.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span id="musicLab">音楽</span></button>
+    <button id="musicBtn" data-open="music" hidden><svg viewBox="0 0 24 24"><path d="M9 18.5V6l10-2v12"/><circle cx="6.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span id="musicLab">音楽</span></button>
     <button data-open="sleep"><svg viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"/></svg><span id="sleepLab">おやすみ</span></button>
     <button data-open="adjust"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="7" cy="17" r="1.6"/></svg><span>ととのえる</span></button>
   </nav>

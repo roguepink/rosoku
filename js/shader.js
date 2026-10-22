@@ -32,7 +32,8 @@ uniform float uBlack;    // 1 で真っ黒
 const float K  = 0.2;    // 見下ろす角度(上の面のだ円のつぶれ具合)
 const float DW = 22.0;   // 壁までの距離
 const float YJ = 4.4;    // 壁と台のさかい目(画面上の高さ) = K*DW
-float gSide = 0.0;       // いま描いた点が ろうそくの手前の横の面か(炎や芯をかくすため)
+float gSide = 0.0;
+float gRefl = 0.0;       // 1 = 映り込みを描いている(上の面は映らない)       // いま描いた点が ろうそくの手前の横の面か(炎や芯をかくすため)
 
 float hash(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
 float vnoise(vec2 p){
@@ -55,11 +56,11 @@ vec3 lightCol(){
 }
 
 // ---------- 炎 ----------
-float prof(float t, float t0, float tb, float w){
+float prof(float t, float t0, float tb, float w, float tipE){
   if (t < t0 || t > 1.0) return 0.0;
   if (t < tb){ float u = (tb - t)/(tb - t0); return w*sqrt(max(1.0 - u*u, 0.0)); }
   float u = (t - tb)/(1.0 - tb);
-  return w*(1.0 - pow(u, 1.55))*(1.0 - 0.22*u);
+  return w*(1.0 - pow(u, tipE))*(1.0 - 0.22*u);
 }
 
 vec3 flameEmit(vec2 p){
@@ -72,12 +73,13 @@ vec3 flameEmit(vec2 p){
   if (t < -0.2 || t > 1.05) return vec3(0.0);
   if (abs(q.x) > h*1.2 + w*2.0) return vec3(0.0);
   float bend = (uFlame.z*t + (uFlame.w - uFlame.z)*t*t)*h;
-  float wob = uFlameP.y*w*t*t*(sin(t*8.0 - uTime*12.0)*0.5 + (vnoise(vec2(t*3.5 - uTime*5.0, 2.0)) - 0.5)*1.4);
+  float wob = uFlameP.y*w*t*t*((vnoise(vec2(t*3.0 - uTime*4.3, 2.0)) - 0.5)*1.4 + (vnoise(vec2(t*6.0 - uTime*9.7, 5.0)) - 0.5)*0.7);
   float x = q.x - bend - wob;
   float tint = uFlameP.w;
 
-  float hwO = prof(t, -0.13, 0.22 + 0.12*tint, w);
-  float hwL = prof(t, 0.03 + 0.05*tint, 0.30 + 0.14*tint, w*0.9);
+  float tipE = mix(1.6, 2.4, tint);
+  float hwO = prof(t, -0.13, 0.22 + 0.12*tint, w, tipE);
+  float hwL = prof(t, 0.03 + 0.05*tint, 0.30 + 0.14*tint, w*0.9, tipE);
   float aa = 1.2/(uS*max(w, 0.05));
   float dO = abs(x)/max(hwO, 1e-4);
   float dL = abs(x)/max(hwL, 1e-4);
@@ -91,22 +93,22 @@ vec3 flameEmit(vec2 p){
   vec3 cMid  = vec3(1.0, 0.80, 0.42);
   vec3 cCore = vec3(1.0, 0.95, 0.84);
   vec3 c = mix(cTip, cOut, smoothstep(0.98, 0.62, tn));
-  cMid = mix(cMid, vec3(1.0, 0.64, 0.24), tint);
-  cCore = mix(cCore, vec3(1.0, 0.84, 0.55), tint);
+  cMid = mix(cMid, vec3(1.0, 0.55, 0.18), tint);
+  cCore = mix(cCore, vec3(1.0, 0.78, 0.45), tint);
   c = mix(c, cMid, smoothstep(0.15, 0.65, core));
   c = mix(c, cCore, smoothstep(0.55, 0.95, core));
-  float lum = envL*mix(1.0, 0.25 + 0.15*tint, smoothstep(0.6, 1.0, tn))*(2.2 + 5.5*core*(1.0 - 0.35*tint))*(1.0 - 0.38*tint);
+  float lum = envL*mix(1.0, 0.25 + 0.15*tint, smoothstep(0.6, 1.0, tn))*(2.2 + 5.5*core*(1.0 - 0.7*tint))*(1.0 - 0.38*tint);
 
   // 芯のまわりの暗いところ(まだ燃えていない ろうの蒸気)
-  float dz = 1.0 - smoothstep(0.30, 1.0, length(vec2(x/(w*0.55), (t - 0.10 - 0.05*tint)/(0.17 + 0.06*tint))));
+  float dz = 1.0 - smoothstep(0.30, 1.0, length(vec2(x/(w*mix(0.55, 0.75, tint)), (t - 0.10 - 0.08*tint)/(0.17 + 0.14*tint))));
   lum *= 1.0 - 0.88*dz;
   vec3 e = c*lum;
 
   // 青い根元
-  float blue = envO*(1.0 - envL*0.92)*smoothstep(0.09, -0.03, t);
+  float blue = envO*(1.0 - envL*0.92)*smoothstep(0.12, 0.0, t)*(0.6 + 0.4*smoothstep(0.3, 0.9, dO))*(1.0 - 0.8*tint);
   blue *= 0.2 + 0.8*smoothstep(0.25, 0.85, dO);
-  e += vec3(0.0, 0.12, 0.55)*blue*0.4*(1.0 - 0.5*tint);
-  e += vec3(0.22, 0.10, 0.03)*dz*envO*0.35;
+  e += vec3(0.05, 0.10, 0.45)*blue*0.3;
+  e += vec3(0.22, 0.10, 0.03)*dz*envO*0.06;
 
   // つけたて・消えかけは 小さく 青っぽい
   float young = smoothstep(0.15, 0.75, lit);
@@ -157,16 +159,26 @@ vec3 wallAt(vec2 p){
   vec3 P = vec3(p.x, yw, -DW);
   float sh = candleShadow(P);
   float E = irr(P, vec3(0.0, 0.0, 1.0))*sh;
-  // 土のざらつきと、すさ(わらの繊維)
-  float n1 = fbm(p*0.9);
-  float n2 = fbm(p*4.0 + 3.0);
-  vec2 rp = mat2(0.8, 0.6, -0.6, 0.8)*p;
-  float fib = smoothstep(0.80, 0.95, vnoise(rp*vec2(1.6, 14.0)))*smoothstep(0.55, 0.8, vnoise(p*0.7 + 9.0));
-  vec3 alb = vec3(0.30, 0.205, 0.13)*(0.72 + 0.45*n1)*(0.85 + 0.3*n2);
-  alb = mix(alb, vec3(0.46, 0.34, 0.20), fib*0.45);
-  // すみ(角)の暗がり
+  // 光のたまり: 炎の正面から離れるほど早く暗く
+  vec2 dl = vec2(p.x - uLP.x, (yw - uLP.y)*0.85);
+  E *= 1.0/(1.0 + dot(dl, dl)/(14.0*14.0));
+  // 土: 砂の粒(細かい)+ こての波(ゆるい)
+  float n1 = fbm(p*0.35);
+  float sand = vnoise(p*22.0)*0.6 + vnoise(p*47.0)*0.4;
+  float grit = smoothstep(0.86, 0.95, vnoise(p*9.0 + 4.0));
+  float trowel = sin(p.y*0.9 + 2.0*fbm(p*0.12))*0.5 + 0.5;
+  // すさ: 短い わら。向きは ばらばら
+  vec2 cell = floor(p*1.3);
+  vec2 f = fract(p*1.3) - 0.5;
+  float ang = hash(cell)*6.283;
+  vec2 dir = vec2(cos(ang), sin(ang));
+  float along = dot(f, dir), across = dot(f, vec2(-dir.y, dir.x));
+  float fib = step(0.62, hash(cell + 7.1))*smoothstep(0.035, 0.0, abs(across))*smoothstep(0.32, 0.18, abs(along));
+  vec3 alb = vec3(0.24, 0.19, 0.135)*(0.80 + 0.30*n1)*(0.86 + 0.28*sand)*(0.95 + 0.07*trowel)*(1.0 - 0.25*grit);
+  alb = mix(alb, vec3(0.42, 0.33, 0.17), fib*0.55);
   float ao = 0.55 + 0.45*smoothstep(0.0, 3.0, yw);
-  return alb*(E*uLight.x*1.7*lightCol() + uLight.z*vec3(0.9, 0.85, 0.8))*ao;
+  vec3 Lw = mix(lightCol(), vec3(1.0, 0.60, 0.32), 0.45);
+  return alb*(E*uLight.x*1.9*Lw + uLight.z*vec3(0.9, 0.85, 0.8))*ao;
 }
 
 vec3 tableAt(vec2 p){
@@ -175,7 +187,7 @@ vec3 tableAt(vec2 p){
   float sh = candleShadow(P);
   float E = irr(P, vec3(0.0, 1.0, 0.0))*sh;
   float n = fbm(vec2(p.x*0.25, z*0.08));
-  vec3 alb = vec3(0.030, 0.012, 0.009)*(0.8 + 0.4*n);   // 黒漆に うすく朱
+  vec3 alb = vec3(0.045, 0.011, 0.007)*(0.8 + 0.4*n);   // 黒漆に うすく朱
   // 漆の表面のやわらかい照り(光の当たる場所が ぼんやり明るい)
   vec3 Lv = normalize(vec3(uLP, 0.0) - P);
   vec3 V = normalize(vec3(0.0, K, 1.0));
@@ -193,13 +205,13 @@ float holderR(float y){
     if (y < 0.0 || y > Hh) return 0.0;
     if (y < 0.45) return R*mix(1.0, 0.92, y/0.45);
     if (y < 0.9)  return mix(R*0.92, 0.42, smoothstep(0.45, 0.9, y));
-    if (y < Hh - 0.25) return 0.36 + 0.06*smoothstep(Hh - 1.2, Hh - 0.4, y);
-    return 2.1;
+    if (y < Hh - 0.25) return 0.28 + 0.05*smoothstep(Hh - 1.2, Hh - 0.4, y);
+    return 1.6;
   } else if (k < 2.5){     // 真鍮の燭台
     if (y < 0.0 || y > Hh) return 0.0;
     if (y < 0.35) return R;
     if (y < 1.6)  return mix(R, 0.85, pow(smoothstep(0.35, 1.6, y), 0.6));
-    float r = 0.62 + 0.18*exp(-pow((y - 3.2)/0.45, 2.0)) + 0.32*exp(-pow((y - Hh*0.55)/0.6, 2.0)) + 0.14*exp(-pow((y - (Hh - 2.4))/0.35, 2.0));
+    float r = 0.55 + 0.16*exp(-pow((y - Hh*0.38)/0.22, 2.0)) + 0.16*exp(-pow((y - Hh*0.68)/0.22, 2.0));
     if (y > Hh - 1.3) r = mix(r, 2.0, smoothstep(Hh - 1.3, Hh - 0.9, y));
     if (y > Hh - 0.7) r = mix(2.0, 1.45, smoothstep(Hh - 0.7, Hh - 0.4, y));
     return r;
@@ -212,7 +224,7 @@ float holderR(float y){
 vec4 holder(vec2 p){
   float k = uHold.x;
   if (k < 0.5) return vec4(0.0);
-  float Hh = uHold.y; float R = max(uHold.z, 2.1);
+  float Hh = uHold.y; float R = max(uHold.z, 2.0);
   float ax = abs(p.x);
   if (ax > R + 0.1 || p.y < -K*R - 0.1 || p.y > Hh + K*R + 0.1) return vec4(0.0);
   float px = 1.0/uS;
@@ -223,7 +235,7 @@ vec4 holder(vec2 p){
   float Le = length(qe);
   vec2 g = vec2(qe.x/Rtop, qe.y/(K*Rtop))/max(Le, 1e-4);
   float dTop = (Le - 1.0)/max(length(g), 1e-4);
-  float aTop = clamp(0.5 - dTop/px, 0.0, 1.0);
+  float aTop = clamp(0.5 - dTop/px, 0.0, 1.0)*(1.0 - gRefl);
   // 横の面: 高さ y の輪の手前のふちが p.y にくる y を さがす(だいたいで 4 回)
   float y = p.y;
   float r = 0.0;
@@ -234,7 +246,7 @@ vec4 holder(vec2 p){
   }
   r = holderR(clamp(y, 0.0, Hh));
   float inSide = (y >= 0.0 && y <= Hh) ? clamp(0.5 - (ax - r)/px, 0.0, 1.0) : 0.0;
-  if (y > Hh - 0.001 && aTop <= 0.0) inSide = 0.0;
+  if (y > Hh - 0.001 && aTop <= 0.0 && gRefl < 0.5) inSide = 0.0;
   float a = max(inSide, aTop);
   if (a <= 0.0) return vec4(0.0);
 
@@ -248,8 +260,8 @@ vec4 holder(vec2 p){
     vec3 Lv = normalize(vec3(uLP, 0.0) - P);
     float spec = pow(max(dot(normalize(Lv + V), vec3(0.0, 1.0, 0.0)), 0.0), 12.0 + 40.0*uHold.w)*uHold.w;
     // ふちの 光るすじ
-    float rim = smoothstep(0.86, 0.99, Le)*0.6;
-    col = uHoldCol*(E*uLight.x*0.6*lightCol() + uLight.z) + lightCol()*E*uLight.x*(spec*6.0 + rim*uHold.w*2.0);
+    float rim = smoothstep(0.90, 0.985, Le)*smoothstep(1.0, 0.985, Le)*1.2;
+    col = uHoldCol*(E*uLight.x*0.6*lightCol() + uLight.z) + lightCol()*E*uLight.x*(spec*2.0 + rim*(0.3 + uHold.w)*2.0) + uHoldCol*rim*uLight.x*0.01;
   } else {
     float nx = clamp(p.x/max(r, 1e-3), -1.0, 1.0);
     float nz = sqrt(max(1.0 - nx*nx, 0.0));
@@ -262,8 +274,9 @@ vec4 holder(vec2 p){
     vec3 Hv = normalize(Lv + normalize(V));
     float spec = pow(max(dot(n, Hv), 0.0), 20.0 + 60.0*uHold.w)*uHold.w;
     float fres = pow(1.0 - nz, 3.0);
-    vec3 env = vec3(1.0, 0.55, 0.28)*uLight.x*0.016;   // まわり(照らされた壁)の照り返し
-    col = uHoldCol*(E*uLight.x*0.6*lightCol() + uLight.z + env*(0.15 + 2.2*fres)*(0.4 + uHold.w)) + lightCol()*sh*spec*uLight.x*0.35;
+    vec3 env = vec3(1.0, 0.55, 0.28)*uLight.x*0.03;   // まわり(照らされた壁)の照り返し
+    float diff = mix(0.6, 0.2, step(0.5, uHold.w));
+    col = uHoldCol*(E*uLight.x*diff*lightCol() + uLight.z + env*(0.15 + 2.2*fres)*(0.4 + uHold.w)) + lightCol()*sh*spec*uLight.x*mix(0.17, 0.7, step(0.7, uHold.w));
     col *= 0.75 + 0.25*nz;
   }
   return vec4(col, a);
@@ -286,25 +299,26 @@ float hexEdge(vec2 p){
 }
 
 vec4 paint(vec2 q){
-  // 絵ろうそくの花(色あせた椿と葉)。q は cm(横はまわりの長さ, たては高さ)。a = 絵のある所
+  // 絵ろうそくの椿(胡粉の白い花と葉)。q は cm(横はまわりの長さ, たては高さ)。a = 絵のある所
   vec3 col = vec3(0.0); float m = 0.0;
-  for (int i = 0; i < 3; i++){
+  for (int i = 0; i < 2; i++){
     float fi = float(i);
-    vec2 c = vec2(-0.45 + 0.6*fi - 0.25*mod(fi, 2.0), uBody.x*(0.62 - 0.13*fi));
-    vec2 ld = q - c - vec2(0.42, -0.30);
-    float leaf = 1.0 - smoothstep(0.85, 1.0, length(vec2(ld.x*0.8 + ld.y*0.6, ld.y*0.8 - ld.x*0.6)/vec2(0.42, 0.16)));
-    vec2 ld2 = q - c - vec2(-0.35, -0.38);
-    float leaf2 = 1.0 - smoothstep(0.85, 1.0, length(vec2(ld2.x*0.8 - ld2.y*0.6, ld2.y*0.8 + ld2.x*0.6)/vec2(0.38, 0.14)));
-    float lf = max(leaf, leaf2)*0.85;
-    col = mix(col, vec3(0.10, 0.17, 0.07), lf); m = max(m, lf);
+    vec2 c = vec2(-0.2 + 0.5*fi, uBody.x*(0.66 - 0.3*fi));
+    vec2 ld = q - c - vec2(0.75, -0.62);
+    float leaf = 1.0 - smoothstep(0.85, 1.0, length(vec2(ld.x*0.8 + ld.y*0.6, ld.y*0.8 - ld.x*0.6)/vec2(0.8, 0.3)));
+    vec2 ld2 = q - c - vec2(-0.7, -0.75);
+    float leaf2 = 1.0 - smoothstep(0.85, 1.0, length(vec2(ld2.x*0.8 - ld2.y*0.6, ld2.y*0.8 + ld2.x*0.6)/vec2(0.75, 0.28)));
+    float lf = max(leaf, leaf2)*0.9;
+    col = mix(col, vec3(0.05, 0.10, 0.025), lf); m = max(m, lf);
     vec2 d = q - c;
     float a = atan(d.y, d.x);
     float r = length(d);
-    float petal = 0.44 + 0.045*cos(5.0*a + fi*1.7);
-    float f = smoothstep(petal, petal - 0.05, r);
-    col = mix(col, mix(vec3(0.85, 0.50, 0.45), vec3(0.93, 0.82, 0.74), smoothstep(0.35, 0.1, r)), f*0.85); m = max(m, f*0.85);
-    float ce = smoothstep(0.11, 0.07, r)*0.9;
-    col = mix(col, vec3(0.80, 0.55, 0.10), ce);
+    float petal = 0.88 + 0.08*cos(5.0*a + fi*1.7);
+    float f = smoothstep(petal, petal - 0.06, r);
+    float vein = 0.92 + 0.08*cos(5.0*a + fi*1.7 + 3.14);
+    col = mix(col, vec3(0.80, 0.72, 0.56)*vein, f*0.92); m = max(m, f*0.92);
+    float ce = smoothstep(0.24, 0.16, r)*0.9;
+    col = mix(col, vec3(0.58, 0.36, 0.07), ce);
   }
   return vec4(col, m);
 }
@@ -326,7 +340,7 @@ vec4 body(vec2 p){
   vec2 g = vec2(qe.x/Rt, qe.y/(K*Rt))/max(Le, 1e-4);
   float dTop = (Le - 1.0)/max(length(g), 1e-4);
   float aSide = clamp(0.5 - dSide/px, 0.0, 1.0);
-  float aTop = clamp(0.5 - dTop/px, 0.0, 1.0);
+  float aTop = clamp(0.5 - dTop/px, 0.0, 1.0)*(1.0 - gRefl);
   float a = max(aSide, aTop);
   gSide = aSide*(1.0 - aTop);
   if (a <= 0.0) return vec4(0.0);
@@ -372,11 +386,11 @@ vec4 body(vec2 p){
     if (uWaxP.w > 0.5 && uWaxP.w < 1.5){
       vec4 pt = paint(vec2(u, y));
       float glowL = dot(sssCol*G*I, vec3(0.3, 0.5, 0.2));
-      side = mix(side, pt.rgb*(refl*1.2 + Lc*glowL*0.6), pt.a);
+      side = mix(side, pt.rgb*(refl*2.6 + Lc*glowL*0.8), pt.a);
     }
     if (uWaxP.w > 1.5){
       float he = hexEdge(vec2(u, y)*2.4);
-      side *= 1.0 - 0.32*he;
+      side *= 1.0 - 0.15*he*smoothstep(H*0.3, H*0.85, y);
     }
     side *= 0.9 + 0.1*nz;
   }
@@ -390,9 +404,10 @@ vec4 body(vec2 p){
     vec2 qo = vec2(p.x/Rp, (y - H)/(K*Rp));
     float lo = length(qo);
     float poolY = y0 + H - depth;
-    if (lp < 1.0){
+    vec3 liq = vec3(0.0), inner = vec3(0.0), rimc = vec3(0.0);
+    {
       // とけた ろうの池: すき通って、下から光る。炎が映る
-      vec3 liq = Lc*pow(max(wax, vec3(0.001)), vec3(1.3))*I*(1.1 + 0.6*(1.0 - lp*lp));
+      liq = Lc*pow(max(wax, vec3(0.001)), vec3(1.3))*I*(1.1 + 0.6*(1.0 - lp*lp));
       if (tea > 0.5){
         liq = Lc*vec3(1.0, 0.92, 0.80)*I*(0.9 + 0.5*(1.0 - lp*lp));
         float tab = smoothstep(0.24, 0.20, length(vec2(p.x, (y - (H - depth))/K)));
@@ -402,13 +417,13 @@ vec4 body(vec2 p){
       liq *= 1.0 - 0.35*men;
       vec3 mirror = flameEmit(vec2(p.x, 2.0*poolY - p.y + 0.02));
       liq += mirror*(0.25 + 0.3*men);
-      top = liq;
-    } else if (lo < 1.0){
+    }
+    {
       // くぼみの 奥の壁(内側から照らされて いちばん明るい)
       float hgt = clamp((y - (H - depth))/max(depth, 0.01), 0.0, 1.0);
-      vec3 inner = tea > 0.5 ? vec3(0.6)*Lc*I*0.9 : Lc*pow(max(wax, vec3(0.001)), vec3(0.7))*I*(2.2 - 0.8*hgt);
-      top = inner;
-    } else {
+      inner = tea > 0.5 ? vec3(0.6)*Lc*I*0.9 : Lc*pow(max(wax, vec3(0.001)), vec3(0.7))*I*(2.2 - 0.8*hgt);
+    }
+    {
       // ふち(平らな輪)
       float z = -(y - H)/K;
       vec3 P = vec3(p.x, topY, z);
@@ -416,14 +431,19 @@ vec4 body(vec2 p){
       float r2 = dot(P.xz, P.xz);
       float E = max(dh, 0.0)/pow(r2 + dh*dh + 0.5, 1.5);
       if (tea > 0.5){
-        top = vec3(0.7)*Lc*(E*uLight.x*0.2 + 0.25*I) + vec3(0.6)*uLight.z;
+        rimc = vec3(0.7)*Lc*(E*uLight.x*0.2 + 0.25*I) + vec3(0.6)*uLight.z;
       } else {
         float wall = max(Rt - Rp, 0.05);
         float thin = exp(-wall/(tr*1.3));
-        top = wax*Lc*(E*uLight.x*0.15) + Lc*pow(max(wax, vec3(0.001)), vec3(0.8))*I*(0.35 + 1.3*thin*smoothstep(0.0, 0.6, depth));
-        top += wax*uLight.z;
+        rimc = wax*Lc*(E*uLight.x*0.15) + Lc*pow(max(wax, vec3(0.001)), vec3(0.8))*I*(0.15 + 1.3*thin*smoothstep(0.0, 0.6, depth));
+        rimc += wax*uLight.z;
       }
     }
+    // さかい目は 1ピクセルぶん なめらかに まぜる(ギザギザを出さない)
+    float pw = px/(K*Rp);
+    float mPool = 1.0 - smoothstep(1.0 - pw, 1.0 + pw, lp);
+    float mOpen = 1.0 - smoothstep(1.0 - pw, 1.0 + pw, lo);
+    top = mix(mix(rimc, inner, mOpen), liq, mPool);
   }
   vec3 col = mix(side, top, aTop);
   return vec4(col, a);
@@ -458,12 +478,13 @@ float smoke(vec2 p){
   vec2 o = uSmoke.zw;
   float yy = p.y - o.y;
   if (yy < 0.0 || yy > 45.0) return 0.0;
-  float v = 6.5;
+  float v = 15.0;
   float head = age*v;
-  float tail = max(age - 3.0, 0.0)*v*1.2;
+  float tail = max(age - 3.0, 0.0)*v*1.1;
   if (yy > head + 2.0 || yy < tail - 2.0) return 0.0;
-  float drift = (vnoise(vec2(yy*0.15 - age*0.35, 7.0)) - 0.5)*yy*0.55 + sin(yy*0.55 - age*1.6)*0.14*sqrt(yy);
-  float wid = 0.035 + yy*0.03;
+  float tur = smoothstep(5.0, 9.0, yy);
+  float drift = ((vnoise(vec2(yy*0.15 - age*0.35, 7.0)) - 0.5)*(yy - 4.0)*0.6 + sin(yy*0.55 - age*1.6)*0.25*sqrt(yy))*tur + (vnoise(vec2(yy*0.4, age))-0.5)*0.08;
+  float wid = 0.03 + yy*0.008 + tur*yy*0.03;
   float d = (p.x - o.x - drift)/wid;
   float dens = exp(-d*d)*smoothstep(head + 1.0, head - 2.5, yy)*smoothstep(tail - 1.0, tail + 3.5, yy);
   dens *= exp(-yy/16.0)/(1.0 + yy*0.12);
@@ -483,7 +504,7 @@ vec3 objects(vec2 p, out float cover){
   vec4 w = wick(p);
   w.a *= 1.0 - front;
   col = mix(col, w.rgb, w.a); cover = max(cover, w.a);
-  col += flameEmit(p)*(1.0 - front);
+  col += flameEmit(p)*(1.0 - max(front, gRefl*cover));
   return col;
 }
 
@@ -504,14 +525,16 @@ void main(){
       float rough = (vnoise(vec2(p.x*0.8, p.y*0.5)) - 0.5)*0.025*(-p.y);
       vec2 pm = vec2(p.x + rough, 2.0*yb - p.y);
       float cv;
+      gRefl = 1.0;
       vec3 rc = objects(pm, cv) + halo(pm)*0.6;
-      float fall = exp(p.y/14.0);
+      gRefl = 0.0;
+      float fall = exp(p.y/22.0);
       col = mix(col, col*0.3, cv*0.5);
-      col += rc*0.24*fall;
+      col += rc*0.38*fall;
       // 縦に のびる ぼんやりした光の帯
-      float dx = (p.x - uLP.x)/(uFlame.y*2.2 + 0.35);
+      float dx = (p.x - uLP.x)/(uFlame.y*1.3 + 0.2);
       float dyv = (p.y + uLP.y)/(uFlame.x*2.6 + 2.0);
-      col += lightCol()*uLight.x*uFlameP.x*0.0022*exp(-dx*dx - dyv*dyv);
+      col += lightCol()*uLight.x*uFlameP.x*0.0012*exp(-dx*dx - dyv*dyv);
     }
   }
 
@@ -524,12 +547,16 @@ void main(){
   float sm = smoke(p);
   col = mix(col, vec3(0.62, 0.58, 0.54)*(0.035 + uLight.z*6.0 + uFlameP.z*0.03), clamp(sm*0.75, 0.0, 1.0));
 
+  vec2 vq = (fc - 0.5*uRes)/uRes.y;
+  col *= 1.0 - 0.55*smoothstep(0.25, 0.85, length(vq*vec2(1.0, 0.8)));
   col *= uLight.y;
   col = aces(col);
   col = pow(col, vec3(1.0/2.2));
   // ざらつき(暗いところの色の段々を消す)
-  float gr = hash(fc + floor(uTime*10.0)*vec2(17.0, 31.0)) - 0.5;
-  col += gr*(1.6/255.0);
+  vec2 gp = fc + floor(uTime*12.0)*vec2(5.588, 5.0);
+  float gr = fract(52.9829189*fract(dot(gp, vec2(0.06711056, 0.00583715)))) - 0.5;
+  float lumG = dot(col, vec3(0.3, 0.5, 0.2));
+  col += gr*(2.2/255.0)*smoothstep(0.01, 0.06, lumG);
   col *= 1.0 - uBlack;
   gl_FragColor = vec4(max(col, 0.0), 1.0);
 }

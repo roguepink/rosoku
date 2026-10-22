@@ -17,7 +17,7 @@ class FlameSim {
     this.hist = [];           // 先端は根元より少し遅れて動く
     this.gusts = [];
     this.nextGust = 0;
-    this.hMul = 1; this.wob = 0.05; this.turb = 0;
+    this.hMul = 1; this.wob = 0.05; this.turb = 0; this.ph = Math.random() * 6;
   }
   step(dt, sway, breath) {
     const t = (this.t += dt);
@@ -39,9 +39,9 @@ class FlameSim {
     // ゆっくり〜中くらいの揺れを重ねる(周期が割り切れないように)
     const n = 0.5 * noise(t * 0.071) + 0.28 * noise(t * 0.213 + 10) + 0.14 * noise(t * 0.67 + 20) + 0.08 * noise(t * 1.9 + 30);
     const target = sway.lean * n * 1.6 + g;
-    const w = 2 * Math.PI * 0.85, z = 0.38;
+    const w = 2 * Math.PI * 1.1, z = 0.85;   // 炎は空気に流されるだけで、はね返らない
     this.v += (w * w * (target - this.lean) - 2 * z * w * this.v) * dt;
-    this.lean += this.v * dt;
+    this.lean = Math.max(-0.45, Math.min(0.45, this.lean + this.v * dt));
     this.hist.push([t, this.lean]);
     while (this.hist.length > 2 && this.hist[1][0] < t - 0.08) this.hist.shift();
     const tip = this.hist[0][1] * 1.3;
@@ -50,9 +50,10 @@ class FlameSim {
     this.turb += (turb - this.turb) * Math.min(1, dt * 4);
     const fast = this.turb * sway.flick * 0.08 * (noise(t * 11.3) * 0.6 + noise(t * 13.7 + 5) * 0.4);
     const slow = sway.height * (0.6 * noise(t * 0.17 + 70) + 0.4 * noise(t * 0.53 + 80));
-    const br = breath.amp * (0.7 * Math.sin(t * 2 * Math.PI * breath.freq + 0.6 * noise(t * 0.1)) + 0.3 * noise(t * 0.45 + 90));
+    this.ph += dt * 2 * Math.PI * breath.freq * (1 + 0.35 * noise(t * 0.05 + 40));   // 息の長さを 毎回すこし変える
+    const br = breath.amp * (0.75 * Math.sin(this.ph) + 0.25 * noise(t * 0.3 + 90));
     this.hMul = Math.max(0.55, 1 + slow + br + fast - 0.5 * Math.abs(this.lean));
-    this.wob = 0.04 + this.turb * 0.5 + sway.lean * 0.4;
+    this.wob = 0.015 + this.turb * 0.5 + sway.lean * 0.4;
     return { lean0: this.lean, lean1: tip };
   }
 }
@@ -60,7 +61,32 @@ class FlameSim {
 export class Scene {
   constructor(canvas) {
     this.canvas = canvas;
-    const gl = canvas.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: true, powerPreference: 'low-power' });
+    this.init();
+    // スマホで裏に回ったあと、描く仕組みが失われることがある → 戻ったら作りなおす
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.lost = true; });
+    canvas.addEventListener('webglcontextrestored', () => { this.lost = false; this.init(); this.resize(); });
+    this.sim = new FlameSim();
+    this.opt = { candle: 0, size: 1, sway: 1, bright: 2, warm: 1 };
+    this.cur = { bright: BRIGHT[2].exp, amb: BRIGHT[2].amb, warm: 0.5 };   // ゆっくり追いかける値
+    this.burn = 1;            // 1 = 新しい / 小さいほど燃えて短い
+    this.lit = 0; this.litTarget = 0;
+    this.ember = 0; this.smokeAge = -1; this.smokeStr = 0;
+    this.fade = 1;            // 1 = 真っ黒 (切りかえ・はじめ)
+    this.fadeTarget = 1;
+    this.fadeIn = 2.0;        // 何秒で 見えてくるか
+    this.fadeOut = 1.2;       // 何秒で 暗くなるか
+    this.shrink = 1;          // おやすみの終わりに 炎を小さくする(1→0)
+    this.shift = [0, 0]; this.shiftTo = [0, 0];   // 板を開いたとき、炎が かくれないように ずらす(画面の割合)
+    this.quality = 1;
+    this.frames = []; this.running = false;
+    this.time = 0;
+    this.onFrame = null;
+    this.resize();
+    addEventListener('resize', () => this.resize());
+  }
+
+  init() {
+    const gl = this.canvas.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: false, powerPreference: 'low-power' });
     if (!gl) throw new Error('webgl');
     this.gl = gl;
     const prog = gl.createProgram();
@@ -83,24 +109,6 @@ export class Scene {
     const n = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS);
     for (let i = 0; i < n; i++) { const a = gl.getActiveUniform(prog, i); this.u[a.name] = gl.getUniformLocation(prog, a.name); }
 
-    this.sim = new FlameSim();
-    this.opt = { candle: 0, size: 1, sway: 1, bright: 2, warm: 1 };
-    this.cur = { bright: BRIGHT[2].exp, amb: BRIGHT[2].amb, warm: 0.5 };   // ゆっくり追いかける値
-    this.burn = 1;            // 1 = 新しい / 小さいほど燃えて短い
-    this.lit = 0; this.litTarget = 0;
-    this.ember = 0; this.smokeAge = -1; this.smokeStr = 0;
-    this.fade = 1;            // 1 = 真っ黒 (切りかえ・はじめ)
-    this.fadeTarget = 1;
-    this.fadeIn = 2.0;        // 何秒で 見えてくるか
-    this.fadeOut = 1.2;       // 何秒で 暗くなるか
-    this.shrink = 1;          // おやすみの終わりに 炎を小さくする(1→0)
-    this.shift = [0, 0]; this.shiftTo = [0, 0];   // 板を開いたとき、炎が かくれないように ずらす(画面の割合)
-    this.quality = 1;
-    this.frames = []; this.running = false;
-    this.time = 0;
-    this.onFrame = null;
-    this.resize();
-    addEventListener('resize', () => this.resize());
   }
 
   resize() {
@@ -130,9 +138,10 @@ export class Scene {
     const top = c.holder.H + c.body.H + c.wick.len * 0.55 + c.flame.h;
     const wide = Math.max(c.holder.R || 0, c.body.Rt, c.body.Rb) * 2;
     const portrait = Hp > W;
-    let S = (portrait ? 0.42 : 0.56) * Hp / top;
-    S = Math.min(S, (portrait ? 0.8 : 0.5) * W / wide, Hp * 0.12 / c.flame.h * 2.2);
-    const baseY = portrait ? Hp * 0.24 : Hp * 0.2;
+    const eff = 25 * Math.pow(top / 25, 0.5);   // 小さいろうそくも 拡大しすぎない(部屋の大きさを そろえる)
+    let S = (portrait ? 0.42 : 0.56) * Hp / eff;
+    S = Math.min(S, Hp * 0.12 / c.flame.h * 2.2, (portrait ? 0.55 : 0.38) * W / wide);
+    const baseY = portrait ? Hp * 0.34 : Hp * 0.22;
     return { S, ox: W / 2 + this.shift[0] * W, oy: baseY + this.shift[1] * Hp };
   }
 
@@ -176,7 +185,7 @@ export class Scene {
     this.lean = this.sim.step(dt, sway, c.breath);
     // 灯る・消える
     const prevLit = this.lit;
-    if (this.litTarget > this.lit) this.lit = Math.min(1, this.lit + dt / 2.6);
+    if (this.litTarget > this.lit) this.lit = Math.min(1, this.lit + dt / 5);
     else if (this.litTarget < this.lit) this.lit = Math.max(0, this.lit - dt / 1.3);
     if (prevLit > 0 && this.lit === 0) { this.smokeAge = 0; this.smokeStr = 1; this.ember = 1; }
     if (this.smokeAge >= 0) { this.smokeAge += dt; if (this.smokeAge > 14) { this.smokeAge = -1; this.smokeStr = 0; } }
@@ -195,6 +204,7 @@ export class Scene {
   }
 
   draw() {
+    if (this.lost) return;
     const gl = this.gl, u = this.u;
     const W = this.canvas.width, Hp = this.canvas.height;
     const d = this.candleDims(), c = d.c;
@@ -209,7 +219,7 @@ export class Scene {
     const lh = fh * mix(0.22, 1, lit);
     const lpx = fbx + (this.lean.lean0 * 0.4 + (this.lean.lean1 - this.lean.lean0) * 0.16) * lh;
     const lpy = fby + 0.4 * lh;
-    const I = 60 * Math.pow(hm, 1.3) * lit * (1 - 0.25 * Math.min(1, Math.abs(this.lean.lean0)));
+    const I = 60 * Math.pow(hm, 0.5) * lit * (1 - 0.25 * Math.min(1, Math.abs(this.lean.lean0)));
 
     gl.uniform2f(u.uRes, W, Hp);
     gl.uniform1f(u.uTime, this.time);

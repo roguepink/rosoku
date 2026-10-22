@@ -17,16 +17,37 @@ with socketserver.ThreadingTCPServer(("127.0.0.1", 0), functools.partial(H, dire
     base = f"http://127.0.0.1:{srv.server_address[1]}"
     with sync_playwright() as p:
         br = p.chromium.launch(executable_path=CHROME, headless=True, args=["--mute-audio", "--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"])
-        pg = br.new_page(viewport={"width": 512, "height": 512})
-        for name, s, pad in [("icon-512", 512, 0), ("icon-192", 192, 0), ("apple-touch-icon", 180, 0), ("maskable-512", 512, 70)]:
-            pg.goto(f"{base}/tools/icon.html?s={s}&pad={pad}"); time.sleep(0.3)
-            pg.locator("#c").screenshot(path=str(ROOT / f"icons/{name}.png")); print(name)
+        # アイコン: 場面そのものから切りぬく(小さな灯。土壁の光のたまり と 漆の映り込み)
+        pg = br.new_page(viewport={"width": 600, "height": 900}, device_scale_factor=2)
+        pg.goto(f"{base}/tools/view.html?c=5&sway=0&b=2"); time.sleep(3)
+        pos = pg.evaluate("""(() => { const s = __s, cv = s.canvas, f = s.framing(cv.width, cv.height), d = s.candleDims(), c = d.c;
+          const top = c.holder.H + d.H; const fy = top - c.depth + d.wl*0.55 + d.fh*0.45;
+          return { x: f.ox / cv.width, y: 1 - (f.oy + fy * f.S) / cv.height, s: f.S / cv.height, fh: d.fh }; })()""")
+        full = Image.open(io.BytesIO(pg.screenshot())).convert("RGB")
+        W, Hh = full.size
+        side = int(pos["s"] * Hh * pos["fh"] * 7.0)
+        cx, cy = int(pos["x"] * W), int(pos["y"] * Hh + side * 0.18)
+        sq = full.crop((cx - side // 2, cy - side // 2, cx + side // 2, cy + side // 2))
+        for name, size in [("icon-512", 512), ("icon-192", 192), ("apple-touch-icon", 180)]:
+            sq.resize((size, size), Image.LANCZOS).save(ROOT / f"icons/{name}.png"); print(name)
+        m = Image.new("RGB", (512, 512), (0, 0, 0)); m.paste(sq.resize((372, 372), Image.LANCZOS), (70, 70))
+        big = sq.resize((512, 512), Image.LANCZOS)
+        from PIL import ImageFilter
+        bg = big.filter(ImageFilter.GaussianBlur(30)); bg.paste(sq.resize((372, 372), Image.LANCZOS), (70, 70))
+        bg.save(ROOT / "icons/maskable-512.png"); print("maskable")
         # 見本(ろうそくを選ぶところ)
-        pg = br.new_page(viewport={"width": 300, "height": 420}, device_scale_factor=1)
+        pg = br.new_page(viewport={"width": 360, "height": 640}, device_scale_factor=1)
         for i, cid in enumerate(ids):
-            pg.goto(f"{base}/tools/view.html?c={i}&sway=0"); time.sleep(2.5)
+            pg.goto(f"{base}/tools/view.html?c={i}&sway=0&b=2"); time.sleep(2.5)
+            box = pg.evaluate("""(() => { const s = __s, cv = s.canvas, f = s.framing(cv.width, cv.height), d = s.candleDims(), c = d.c;
+              const top = c.holder.H + d.H - c.depth + d.wl*0.55 + d.fh*1.05;
+              return { top: 1 - (f.oy + top * f.S) / cv.height, base: 1 - f.oy / cv.height }; })()""")
             im = Image.open(io.BytesIO(pg.screenshot())).convert("RGB")
-            im = im.crop((40, 40, 260, 330)).resize((152, 200), Image.LANCZOS)
+            W, Hh = im.size
+            t, bse = box["top"] * Hh, box["base"] * Hh
+            h = (bse - t) / 0.72                      # ろうそくが 画像の高さの 7割ほど
+            y0 = t - h * 0.16; w = h * 152 / 200
+            im = im.crop((int(W / 2 - w / 2), int(y0), int(W / 2 + w / 2), int(y0 + h))).resize((152, 200), Image.LANCZOS)
             im.save(ROOT / f"icons/thumb-{cid}.jpg", quality=86); print("thumb", cid)
         # 共有用(LINE などに貼ったとき)
         pg = br.new_page(viewport={"width": 1200, "height": 630}, device_scale_factor=1)

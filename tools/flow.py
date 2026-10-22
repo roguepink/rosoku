@@ -35,10 +35,10 @@ with socketserver.ThreadingTCPServer(("127.0.0.1", 0), functools.partial(H, dire
         pg.mouse.click(195, 400); time.sleep(3)          # 灯す
         pg.mouse.click(195, 400); time.sleep(0.6)        # 操作を出す
         print("music button visible:", pg.is_visible("#musicBtn"))
-        pg.click("#musicBtn"); time.sleep(2)
+        pg.click("#musicBtn"); time.sleep(0.4); pg.click("#mplay"); time.sleep(2)
         st = lambda: pg.evaluate("({playing: __itto.music.playing, idx: __itto.music.idx, t: __itto.music.audio.currentTime, paused: __itto.music.audio.paused, err: __itto.music.audio.error && __itto.music.audio.error.code, src: __itto.music.audio.src.slice(-6), rs: __itto.music.audio.readyState, gain: __itto.music.gain && +__itto.music.gain.gain.value.toFixed(3), phase: __itto.phase})")
         print("after play 2s:", st())
-        pg.evaluate("__itto.openSheet('adjust')"); time.sleep(0.5)
+        time.sleep(0.1)
         pg.screenshot(path=str(out / "flow-adjust-music.png"))
         time.sleep(4); print("after 6s:", st())
         time.sleep(10); print("after 16s:", st()); time.sleep(4); print("after 20s (曲がかわるはず):", st()); time.sleep(3); print("after 23s:", st())
