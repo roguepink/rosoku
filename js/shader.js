@@ -28,6 +28,7 @@ uniform vec4  uHold;     // 台の種類(0 なし 1 鉄の燭台 2 真鍮の燭�
 uniform vec3  uHoldCol;  // 台の色
 uniform vec4  uSmoke;    // 消えてからの秒数, 濃さ, 芯の先 x, y
 uniform float uBlack;    // 1 で真っ黒
+uniform float uLow;      // 1 = 軽い描き方(重い端末のとき。映り込みを1か所だけで描く)
 uniform vec4  uMotif;    // 絵: 種類(1椿 2桜 3梅 4菊 5牡丹), 花の大きさ(cm), 数, 枝や葉(0/1)
 uniform vec3  uPetal;    // 花の色
 uniform vec3  uPetal2;   // 花の内側・しべの色
@@ -778,7 +779,9 @@ void main(){
       float spread = 0.06 + dist*0.09;
       float cv, cv1, cv2, cv3;
       gRefl = 1.0; gNoFlame = 1.0;
-      vec3 rc = objects(pm + vec2(-spread, 0.3*spread), cv1)
+      vec3 rc;
+      if (uLow > 0.5){ rc = objects(pm, cv2)*3.0; cv1 = cv2; cv3 = cv2; }
+      else rc = objects(pm + vec2(-spread, 0.3*spread), cv1)
               + objects(pm + vec2(0.0, -0.4*spread), cv2)
               + objects(pm + vec2(spread, 0.3*spread), cv3);
       gNoFlame = 0.0;

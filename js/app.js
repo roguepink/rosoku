@@ -23,7 +23,7 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (
 // ---------- 場面 ----------
 let scene;
 try { scene = new Scene($('scene')); } catch (e) {
-  document.body.insertAdjacentHTML('beforeend', '<p class="hint on" style="top:40%">この端末では、ろうそくを描けませんでした。</p>');
+  document.body.insertAdjacentHTML('beforeend', '<p class="hint on" style="top:40%;bottom:auto">この端末では、ろうそくを描けませんでした。<br>Safari や Chrome で開きなおしてみてください。</p>');
   throw e;
 }
 scene.set({ candle: st.candle, size: st.size, sway: st.sway, bright: st.bright, warm: st.warm });
@@ -39,8 +39,12 @@ music.order = st.order;
 let phase = 'dark';
 
 // ---------- はじめ ----------
-setTimeout(() => $('title').classList.add('on'), 700);
-setTimeout(() => { if (phase === 'dark') showHint(TOUCH_TO_LIGHT); }, 2400);
+setTimeout(() => $('title').classList.add('on'), 200);
+setTimeout(() => { if (phase === 'dark') showHint(TOUCH_TO_LIGHT); }, 900);
+// 描く仕組みが こわれて もどらないときは、黙って真っ黒にせず ことわりを出す
+let lostT = 0;
+scene.onLost = () => { clearTimeout(lostT); lostT = setTimeout(() => showHint('表示が重すぎたようです。ほかのアプリを閉じて、もう一度開いてください。'), 4000); };
+scene.onRestored = () => { clearTimeout(lostT); hideHint(); };
 
 function showHint(text) { const h = $('hint'); h.textContent = text; h.classList.add('on'); }
 function hideHint() { $('hint').classList.remove('on'); }

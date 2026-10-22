@@ -32,12 +32,12 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
   writing-mode: vertical-rl; font-size: 26px; letter-spacing: 0.6em; color: var(--ink);
   opacity: 0; transition: opacity 2.4s var(--ease); pointer-events: none;
 }
-.title.on { opacity: 0.42; }
+.title.on { opacity: 0.6; }
 .hint, .toast {
   position: fixed; left: 0; right: 0; bottom: calc(18% + var(--sab)); margin: 0; text-align: center;
   font-size: 15px; color: var(--ink); opacity: 0; transition: opacity 1.6s var(--ease); pointer-events: none; padding: 0 24px;
 }
-.hint.on { opacity: 0.65; }
+.hint.on { opacity: 0.8; }
 .toast { bottom: auto; top: calc(14% + var(--sat)); font-size: 15px; letter-spacing: 0.3em; }
 .toast.on { opacity: 0.6; }
 .relight {

@@ -63,8 +63,8 @@ export class Scene {
     this.canvas = canvas;
     this.init();
     // スマホで裏に回ったあと、描く仕組みが失われることがある → 戻ったら作りなおす
-    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.lost = true; });
-    canvas.addEventListener('webglcontextrestored', () => { this.lost = false; this.init(); this.resize(); });
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.lost = true; this.low = true; this.quality = 0.4; if (this.onLost) this.onLost(); });
+    canvas.addEventListener('webglcontextrestored', () => { this.lost = false; this.init(); this.resize(); if (this.onRestored) this.onRestored(); });
     this.sim = new FlameSim();
     this.opt = { candle: 0, size: 1, sway: 1, bright: 2, warm: 1 };
     this.cur = { bright: BRIGHT[2].exp, amb: BRIGHT[2].amb, warm: 0.5 };   // ゆっくり追いかける値
@@ -77,7 +77,9 @@ export class Scene {
     this.fadeOut = 1.2;       // 何秒で 暗くなるか
     this.shrink = 1;          // おやすみの終わりに 炎を小さくする(1→0)
     this.shift = [0, 0]; this.shiftTo = [0, 0];   // 板を開いたとき、炎が かくれないように ずらす(画面の割合)
-    this.quality = 1;
+    // スマホは軽めから始めて、なめらかなら上げる(重すぎると iPhone はページごと止めてしまう)
+    this.quality = matchMedia('(pointer: coarse)').matches ? 0.75 : 1;
+    this.low = false;
     this.frames = []; this.running = false;
     this.time = 0;
     this.onFrame = null;
@@ -174,11 +176,15 @@ export class Scene {
 
   adapt(dt) {
     this.frames.push(dt);
-    if (this.frames.length < 90) return;
+    if (this.frames.length < 30) return;
     const avg = this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
     this.frames = [];
-    if (avg > 1 / 40 && this.quality > 0.55) { this.quality = Math.max(0.55, this.quality - 0.15); this.resize(); }
-    else if (avg < 1 / 57 && this.quality < 1) { this.quality = Math.min(1, this.quality + 0.1); this.resize(); }
+    if (avg > 1 / 24) {
+      // かなり重い: 一気に下げて、映り込みも軽くする
+      this.low = true;
+      if (this.quality > 0.35) { this.quality = Math.max(0.35, this.quality - 0.2); this.resize(); }
+    } else if (avg > 1 / 40 && this.quality > 0.45) { this.quality = Math.max(0.45, this.quality - 0.1); this.resize(); }
+    else if (avg < 1 / 57 && this.quality < 1) { this.quality = Math.min(1, this.quality + 0.05); this.resize(); if (this.quality > 0.7) this.low = false; }
   }
 
   update(dt) {
@@ -240,7 +246,7 @@ export class Scene {
     gl.uniform4f(u.uFlameP, lit, this.sim.wob, this.ember, c.flame.tint);
     gl.uniform2f(u.uFB, fbx, fby);
     gl.uniform2f(u.uLP, lpx, lpy);
-    gl.uniform4f(u.uLight, I, this.cur.bright, this.cur.amb, this.cur.warm);
+    gl.uniform4f(u.uLight, I, this.cur.bright, this.cur.amb * (1 + 5 * (1 - lit)), this.cur.warm);
     gl.uniform4f(u.uHold, c.holder.kind, c.holder.H, c.holder.R, c.holder.gloss);
     gl.uniform3fv(u.uHoldCol, hexToLinear(c.holder.color));
     const tipX = c.flame.at ? fbx : c.wick.curl, tipY = c.flame.at ? fby + 0.1 : poolY + d.wl * 0.95;
@@ -255,6 +261,7 @@ export class Scene {
     gl.uniform3fv(u.uCoverCol, hexToLinear(cv.color));
     gl.uniform3fv(u.uFrameCol, hexToLinear(cv.frame));
     gl.uniform4f(u.uSmoke, Math.max(0, this.smokeAge), this.smokeStr, tipX, tipY);
+    gl.uniform1f(u.uLow, this.low ? 1 : 0);
     gl.uniform1f(u.uBlack, this.fade * this.fade * (3 - 2 * this.fade));
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
