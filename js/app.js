@@ -108,6 +108,8 @@ function openSheet(id) {
   sheet = sheet === id ? null : id;
   for (const s of ['pick', 'sleep', 'adjust']) $(s).hidden = s !== sheet;
   document.querySelectorAll('#bar [data-open]').forEach((b) => b.classList.toggle('cur', b.dataset.open === sheet));
+  const land = innerWidth > innerHeight && innerHeight <= 560;
+  scene.shiftTo = !sheet ? [0, 0] : land ? [-0.2, 0] : [0, 0.14];
   if (sheet === 'pick') {
     const cur = $('thumbs').children[st.candle];
     if (cur) cur.scrollIntoView({ inline: 'center', block: 'nearest' });

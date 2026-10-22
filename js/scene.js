@@ -94,6 +94,7 @@ export class Scene {
     this.fadeIn = 2.0;        // 何秒で 見えてくるか
     this.fadeOut = 1.2;       // 何秒で 暗くなるか
     this.shrink = 1;          // おやすみの終わりに 炎を小さくする(1→0)
+    this.shift = [0, 0]; this.shiftTo = [0, 0];   // 板を開いたとき、炎が かくれないように ずらす(画面の割合)
     this.quality = 1;
     this.frames = []; this.running = false;
     this.time = 0;
@@ -132,7 +133,7 @@ export class Scene {
     let S = (portrait ? 0.42 : 0.56) * Hp / top;
     S = Math.min(S, (portrait ? 0.8 : 0.5) * W / wide, Hp * 0.12 / c.flame.h * 2.2);
     const baseY = portrait ? Hp * 0.24 : Hp * 0.2;
-    return { S, ox: W / 2, oy: baseY };
+    return { S, ox: W / 2 + this.shift[0] * W, oy: baseY + this.shift[1] * Hp };
   }
 
   light() { this.litTarget = 1; this.smokeAge = -1; this.smokeStr = 0; }
@@ -186,6 +187,9 @@ export class Scene {
     this.cur.bright += (b.exp - this.cur.bright) * k;
     this.cur.amb += (b.amb - this.cur.amb) * k;
     this.cur.warm += (WARMTH[this.opt.warm].v - this.cur.warm) * k;
+    const sk = Math.min(1, dt * 2.5);
+    this.shift[0] += (this.shiftTo[0] - this.shift[0]) * sk;
+    this.shift[1] += (this.shiftTo[1] - this.shift[1]) * sk;
     if (this.fade < this.fadeTarget) this.fade = Math.min(this.fadeTarget, this.fade + dt / this.fadeOut);
     else if (this.fade > this.fadeTarget) this.fade = Math.max(this.fadeTarget, this.fade - dt / this.fadeIn);
   }

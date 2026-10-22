@@ -62,6 +62,7 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
   font-size: 13px; color: var(--ink); opacity: 0.82;
 }
 .bar button.cur { color: var(--amber); opacity: 1; }
+.bar button span, .choices button, .lab, .link { white-space: nowrap; }
 .bar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
 #sleepLab.timing { color: var(--beni); }
 
@@ -110,8 +111,9 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
     padding: calc(8px + var(--sat)) calc(8px + var(--sar)) calc(8px + var(--sab)) 8px;
     background: linear-gradient(to left, rgba(0,0,0,0.75), rgba(0,0,0,0));
   }
+  .bar button { min-height: 56px; font-size: 12px; letter-spacing: 0.02em; }
   .drawer { left: auto; top: 0; bottom: 0; right: calc(84px + var(--sar)); align-items: center; }
-  .sheet { width: 340px; max-height: 92vh; max-height: 92dvh; border: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .sheet { width: 380px; max-width: calc(100vw - 260px); max-height: 92vh; max-height: 92dvh; border: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
   .title { top: 12%; }
   .hint { bottom: calc(10% + var(--sab)); }
 }
