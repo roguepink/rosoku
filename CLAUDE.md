@@ -48,6 +48,11 @@
 - 漆の映り込みが目立ちすぎ → 弱く・ぼかす(3か所の平均。炎は1か所だけ うすく)。主役は上のろうそく。
 - 細長いろうそくを大きく、下のほうへ(ろうそくの真ん中が画面の46%)。小さな灯(豆皿)のバランスが お手本。
 
+## iPhone で「ページが開かない」と言われた(2026-10-23)
+- 原因は実機がないので しぼれていない。考えられる3つを まとめて直した: はじめの画面が真っ黒に近い / フォント待ちでページが出ない / 古い iPhone には重すぎる。
+- スマホは quality 0.75 から始め、30コマごとに見て下げる。かなり重いときは scene.low(映り込み1か所)。描く仕組みがこわれたら4秒後に ことわりを出す。
+- iPhone と同じ WebKit で確かめる: `~/.local/venvs/ryokoshi/bin/python -m playwright install webkit` 済み(p.webkit + devices["iPhone 13"])。Mac の WebKit では開ける。
+
 ## まだのこと
 - 実機(iPhone / Android)で見ていない。とくに: 重さ・電池、音(iPhone の消音スイッチ)、画面つけっぱなし、LINE の中。
 - 2026-10-22 ノブさん OK で GitHub Pages 公開: https://roguepink.github.io/rosoku/
