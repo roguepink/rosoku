@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="一灯">
+<meta name="description" content="一灯(いっとう) — 電気を消して、ろうそくを一本だけ。ながめるだけの灯り。広告なし。">
+<title>一灯</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta property="og:title" content="一灯(いっとう)">
+<meta property="og:description" content="電気を消して、ろうそくを一本だけ。">
+<meta property="og:image" content="icons/ogp.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho&display=swap">
+<style>
+  html, body { background: #000; }
+</style>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<!-- はじめの名前(たて書き) -->
+<div id="title" class="title" aria-hidden="true">一灯</div>
+<p id="hint" class="hint" role="status"></p>
+<button id="relight" class="relight" hidden>もう一度ともす</button>
+<p id="toast" class="toast" aria-live="polite"></p>
+
+<!-- 操作の部品(ふだんは かくれている) -->
+<div id="ui" class="ui" aria-hidden="true">
+  <div id="drawer" class="drawer">
+    <!-- ろうそくを選ぶ -->
+    <section id="pick" class="sheet" hidden aria-label="ろうそくを選ぶ">
+      <div id="thumbs" class="thumbs"></div>
+    </section>
+
+    <!-- おやすみ(タイマー) -->
+    <section id="sleep" class="sheet" hidden aria-label="おやすみ">
+      <p class="note">時間がくると、灯がゆっくり小さくなって消えます。</p>
+      <div class="choices wrap" id="sleepChoices"></div>
+    </section>
+
+    <!-- ととのえる -->
+    <section id="adjust" class="sheet" hidden aria-label="ととのえる">
+      <div class="row"><span class="lab">ゆれ</span><div class="choices" id="swayChoices"></div></div>
+      <div class="row"><span class="lab">大きさ</span><div class="choices" id="sizeChoices"></div></div>
+      <div class="row"><span class="lab">明るさ</span><div class="choices dots" id="brightChoices"></div></div>
+      <div class="row"><span class="lab">色あい</span><div class="choices" id="warmChoices"></div></div>
+      <div id="musicRows" hidden>
+        <div class="row"><span class="lab">音の大きさ</span><input id="vol" type="range" min="0" max="100" step="1" aria-label="音の大きさ"></div>
+        <div class="row"><span class="lab">曲の順番</span><div class="choices" id="orderChoices"></div></div>
+        <ol id="tracks" class="tracks"></ol>
+      </div>
+      <div class="row end">
+        <button id="out" class="link">灯を消す</button>
+        <button id="fs" class="link" hidden>画面いっぱいにする</button>
+      </div>
+      <p id="lineNote" class="note" hidden>LINE の中ではなく、ブラウザで開くと、画面が消えずに ずっと表示できます。</p>
+      <p id="wakeNote" class="note" hidden>しばらくすると画面が消えるときは、スマホの「自動ロック」を長めにしてください。</p>
+      <p id="installNote" class="note"></p>
+      <p class="credit">一灯 ・ ROGUE PINK</p>
+    </section>
+  </div>
+
+  <nav id="bar" class="bar" aria-label="操作">
+    <button data-open="pick"><svg viewBox="0 0 24 24"><path d="M12 3.2c1.6 2 2.2 3.3 2.2 4.4a2.2 2.2 0 0 1-4.4 0c0-1.1.6-2.4 2.2-4.4Z"/><path d="M9.5 11.5h5v9h-5z"/><path d="M12 9.8v1.7"/></svg><span>ろうそく</span></button>
+    <button id="musicBtn" hidden><svg viewBox="0 0 24 24"><path d="M9 18.5V6l10-2v12"/><circle cx="6.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg><span id="musicLab">音楽</span></button>
+    <button data-open="sleep"><svg viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"/></svg><span id="sleepLab">おやすみ</span></button>
+    <button data-open="adjust"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="7" cy="17" r="1.6"/></svg><span>ととのえる</span></button>
+  </nav>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
