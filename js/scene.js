@@ -135,8 +135,9 @@ export class Scene {
   // 画面にどう収めるか(大きさ「中」で決めて、小・大は その中で大きさが変わる)
   framing(W, Hp) {
     const c = CANDLES[this.opt.candle];
-    const top = c.holder.H + c.body.H + c.wick.len * 0.55 + c.flame.h;
-    const wide = Math.max(c.holder.R || 0, c.body.Rt, c.body.Rb) * 2;
+    let top = c.holder.H + c.body.H + c.wick.len * 0.55 + c.flame.h;
+    if (c.cover) top = Math.max(top, c.cover.y1 + 0.5);
+    const wide = Math.max(c.holder.R || 0, c.body.Rt, c.body.Rb, c.cover ? c.cover.R : 0) * 2;
     const portrait = Hp > W;
     const eff = 25 * Math.pow(top / 25, 0.5);   // 小さいろうそくも 拡大しすぎない(部屋の大きさを そろえる)
     let S = (portrait ? 0.56 : 0.62) * Hp / eff;
@@ -184,7 +185,9 @@ export class Scene {
     this.time += dt;
     const sway = SWAYS[this.opt.sway];
     const c = CANDLES[this.opt.candle];
-    this.lean = this.sim.step(dt, sway, c.breath);
+    // かさの中は 風が当たりにくい(calm)。灯明皿は よく ちらつく(flick)
+    const sw = (c.calm || c.flick) ? { ...sway, lean: sway.lean * (c.calm || 1), gust: sway.gust * (c.calm || 1), flick: Math.min(1, sway.flick + (c.flick || 0)) } : sway;
+    this.lean = this.sim.step(dt, sw, c.breath);
     // 灯る・消える
     const prevLit = this.lit;
     if (this.litTarget > this.lit) this.lit = Math.min(1, this.lit + dt / 5);
@@ -216,8 +219,9 @@ export class Scene {
     const hm = this.sim.hMul * mix(0.35, 1, this.shrink);
     const fh = d.fh * hm, fw = d.fw * (0.92 + 0.08 * hm) * (1 - 0.25 * Math.min(1, Math.abs(this.lean.lean0) * 2));
     const poolY = c.holder.H + d.H - c.depth;
-    const fbx = c.wick.curl * 0.7 + this.lean.lean0 * 0.2 * d.wl;
-    const fby = poolY + d.wl * 0.55;
+    let fbx = c.wick.curl * 0.7 + this.lean.lean0 * 0.2 * d.wl;
+    let fby = poolY + d.wl * 0.55;
+    if (c.flame.at) { fbx = d.Rt * c.flame.at.x + this.lean.lean0 * 0.1; fby = c.holder.H + d.H + c.flame.at.dy; }   // 灯明皿: 炎は ふちの芯から
     const lh = fh * mix(0.22, 1, lit);
     const lpx = fbx + (this.lean.lean0 * 0.4 + (this.lean.lean1 - this.lean.lean0) * 0.16) * lh;
     const lpy = fby + 0.4 * lh;
@@ -239,7 +243,17 @@ export class Scene {
     gl.uniform4f(u.uLight, I, this.cur.bright, this.cur.amb, this.cur.warm);
     gl.uniform4f(u.uHold, c.holder.kind, c.holder.H, c.holder.R, c.holder.gloss);
     gl.uniform3fv(u.uHoldCol, hexToLinear(c.holder.color));
-    const tipX = c.wick.curl, tipY = poolY + d.wl * 0.95;
+    const tipX = c.flame.at ? fbx : c.wick.curl, tipY = c.flame.at ? fby + 0.1 : poolY + d.wl * 0.95;
+    const m = c.motif || { kind: 0, size: 1, n: 0, leaf: 0, petal: '#000000', petal2: '#000000', leafC: '#000000' };
+    gl.uniform4f(u.uMotif, m.kind, m.size, m.n, m.leaf);
+    gl.uniform3fv(u.uPetal, hexToLinear(m.petal));
+    gl.uniform3fv(u.uPetal2, hexToLinear(m.petal2));
+    gl.uniform3fv(u.uLeafC, hexToLinear(m.leafC));
+    gl.uniform4f(u.uGold, c.gold || 0, 0, 0, 0);
+    const cv = c.cover || { kind: 0, R: 0, y0: 0, y1: 0, color: '#000000', frame: '#000000' };
+    gl.uniform4f(u.uCover, cv.kind, cv.R, cv.y0, cv.y1);
+    gl.uniform3fv(u.uCoverCol, hexToLinear(cv.color));
+    gl.uniform3fv(u.uFrameCol, hexToLinear(cv.frame));
     gl.uniform4f(u.uSmoke, Math.max(0, this.smokeAge), this.smokeStr, tipX, tipY);
     gl.uniform1f(u.uBlack, this.fade * this.fade * (3 - 2 * this.fade));
     gl.drawArrays(gl.TRIANGLES, 0, 3);

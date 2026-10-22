@@ -3,10 +3,10 @@
    - アプリの本体(下の FILES)は、はじめに全部覚える。開くときは まずネットで最新を取りにいき、3秒つながらなければ 覚えているものを出す。
    - 曲(music/)と文字の形(フォント)は、一度流した・表示したものだけ 覚えておく(10曲ぶん 先に全部はダウンロードしない)。
    FILES を変えたときは VERSION を1つ上げる。 */
-const VERSION = 'itto-v1';
+const VERSION = 'itto-v2';
 const FILES = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/scene.js', 'js/shader.js', 'js/candles.js', 'js/music.js',
   'manifest.webmanifest', 'music/tracks.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
-  'icons/thumb-wa-shiro.jpg', 'icons/thumb-wa-e.jpg', 'icons/thumb-mitsurou.jpg', 'icons/thumb-hashira.jpg', 'icons/thumb-hosoi.jpg', 'icons/thumb-tea.jpg'];
+  'icons/thumb-wa-shiro.jpg', 'icons/thumb-shu.jpg', 'icons/thumb-botan.jpg', 'icons/thumb-andon.jpg', 'icons/thumb-take.jpg', 'icons/thumb-kin.jpg', 'icons/thumb-wa-e.jpg', 'icons/thumb-bonbori.jpg', 'icons/thumb-kinari.jpg', 'icons/thumb-toumyou.jpg', 'icons/thumb-ume.jpg', 'icons/thumb-kiku.jpg', 'icons/thumb-teshoku.jpg', 'icons/thumb-hyakume.jpg', 'icons/thumb-ayame.jpg', 'icons/thumb-mame.jpg', 'icons/thumb-mitsurou.jpg', 'icons/thumb-tea.jpg', 'icons/thumb-hashira.jpg', 'icons/thumb-hosoi.jpg'];
 const KEEP = 'itto-keep';   // 曲とフォント(VERSION を上げても消さない)
 
 self.addEventListener('install', (e) => {

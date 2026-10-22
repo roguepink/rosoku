@@ -10,7 +10,7 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 class H(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 from playwright.sync_api import sync_playwright
-ids = re.findall(r"id: '([^']+)'", (ROOT / "js/candles.js").read_text())[:6]
+ids = re.findall(r"id: '([^']+)', name", (ROOT / "js/candles.js").read_text())[:20]
 socketserver.TCPServer.allow_reuse_address = True
 with socketserver.ThreadingTCPServer(("127.0.0.1", 0), functools.partial(H, directory=str(ROOT))) as srv:
     threading.Thread(target=srv.serve_forever, daemon=True).start()
@@ -40,13 +40,15 @@ with socketserver.ThreadingTCPServer(("127.0.0.1", 0), functools.partial(H, dire
         for i, cid in enumerate(ids):
             pg.goto(f"{base}/tools/view.html?c={i}&sway=0&b=2"); time.sleep(2.5)
             box = pg.evaluate("""(() => { const s = __s, cv = s.canvas, f = s.framing(cv.width, cv.height), d = s.candleDims(), c = d.c;
-              const top = c.holder.H + d.H - c.depth + d.wl*0.55 + d.fh*1.05;
+              let top = c.holder.H + d.H - c.depth + d.wl*0.55 + d.fh*1.05; if (c.cover) top = Math.max(top, c.cover.y1 + 0.3*c.cover.R*0.2 + 0.4);
               return { top: 1 - (f.oy + top * f.S) / cv.height, base: 1 - f.oy / cv.height }; })()""")
             im = Image.open(io.BytesIO(pg.screenshot())).convert("RGB")
             W, Hh = im.size
             t, bse = box["top"] * Hh, box["base"] * Hh
             h = (bse - t) / 0.72                      # ろうそくが 画像の高さの 7割ほど
             y0 = t - h * 0.16; w = h * 152 / 200
+            if w > W:                                   # 横にはみ出すときは 小さめに切る
+                cy = y0 + h / 2; w = W; h = w * 200 / 152; y0 = cy - h / 2
             im = im.crop((int(W / 2 - w / 2), int(y0), int(W / 2 + w / 2), int(y0 + h))).resize((152, 200), Image.LANCZOS)
             im.save(ROOT / f"icons/thumb-{cid}.jpg", quality=86); print("thumb", cid)
         # 共有用(LINE などに貼ったとき)

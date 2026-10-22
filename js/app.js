@@ -136,7 +136,7 @@ function openSheet(id) {
   scene.shiftTo = !sheet ? [0, 0] : land ? [-0.2, 0] : [0, 0.14];
   if (sheet === 'pick') {
     const cur = $('thumbs').children[st.candle];
-    if (cur) cur.scrollIntoView({ inline: 'center', block: 'nearest' });
+    if (cur) cur.scrollIntoView({ block: 'center' });
   }
   if (uiOn) bump();
 }
@@ -228,7 +228,8 @@ choices($('sizeChoices'), SIZES, () => st.size, (i) => { st.size = i; scene.set(
 choices($('brightChoices'), [7, 9, 11, 13, 15].map((px, i) => ({ html: `<i style="width:${px}px;height:${px}px;opacity:${0.45 + i * 0.13}"></i>`, label: `明るさ ${i + 1}` })),
   () => st.bright, (i) => { st.bright = i; scene.set({ bright: i }); });
 choices($('warmChoices'), WARMTH, () => st.warm, (i) => { st.warm = i; scene.set({ warm: i }); });
-choices($('orderChoices'), [{ name: '順番に' }, { name: 'ばらばら' }], () => (st.order === 'order' ? 0 : 1), (i) => { st.order = i ? 'random' : 'order'; music.order = st.order; });
+const ORDERS = ['order', 'random', 'one'];
+choices($('orderChoices'), [{ name: '順番に' }, { name: 'ばらばら' }, { name: '1曲くり返し' }], () => Math.max(0, ORDERS.indexOf(st.order)), (i) => { st.order = ORDERS[i]; music.order = st.order; });
 choices($('sleepChoices'), SLEEPS, () => sleepIdx, (i) => setSleep(i));
 
 function refreshChoices() {

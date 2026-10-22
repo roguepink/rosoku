@@ -2,7 +2,7 @@
 // - 音は Web Audio の音量(GainNode)で動かす(iPhone はプログラムから音量を変えられないため)
 // - はじめは ゆっくり大きく、止めるときは ゆっくり小さく
 // - 曲の終わり 8秒は 自動で小さくして、3秒 しずかにしてから 次の曲へ
-// - 順番: 'order' 順番に / 'random' ばらばら(同じ曲が続かない)。最後まで行ったら はじめから
+// - 順番: 'order' 順番に / 'random' ばらばら(同じ曲が続かない) / 'one' 1曲くり返し。最後まで行ったら はじめから
 
 const FADE_IN = 5, FADE_STOP = 1.5, TAIL = 8, GAP = 3;
 
@@ -115,6 +115,7 @@ export class Music {
 
   nextIndex() {
     const n = this.tracks.length;
+    if (this.order === 'one') return this.idx;
     if (n < 2) return 0;
     if (this.order === 'order') return (this.idx + 1) % n;
     let j;
@@ -138,9 +139,9 @@ export class Music {
     this.tailing = false;
     this.gapTimer = setTimeout(() => {
       if (!this.playing) return;
-      this.idx = this.nextIndex();
-      this.audio.src = this.src(this.idx);
-      this.loaded = this.idx;
+      const j = this.nextIndex();
+      if (j !== this.idx || this.loaded !== j) { this.idx = j; this.audio.src = this.src(j); this.loaded = j; }
+      else this.audio.currentTime = 0;
       const p = this.audio.play();
       if (p && p.catch) p.catch(() => {});
       this.ramp(this.level(), 3);
