@@ -139,9 +139,11 @@ export class Scene {
     const wide = Math.max(c.holder.R || 0, c.body.Rt, c.body.Rb) * 2;
     const portrait = Hp > W;
     const eff = 25 * Math.pow(top / 25, 0.5);   // 小さいろうそくも 拡大しすぎない(部屋の大きさを そろえる)
-    let S = (portrait ? 0.42 : 0.56) * Hp / eff;
+    let S = (portrait ? 0.56 : 0.62) * Hp / eff;
     S = Math.min(S, Hp * 0.12 / c.flame.h * 2.2, (portrait ? 0.55 : 0.38) * W / wide);
-    const baseY = portrait ? Hp * 0.34 : Hp * 0.22;
+    // ろうそく(台から炎の先まで)の真ん中が、画面の高さの 46% あたりにくるように置く。
+    // 背の高いろうそくは 下のほうへ(映り込みの見える所を せまく)、小さな灯は 今までどおり
+    const baseY = Math.max(Hp * (portrait ? 0.17 : 0.13), Hp * 0.46 - top * S / 2);
     return { S, ox: W / 2 + this.shift[0] * W, oy: baseY + this.shift[1] * Hp };
   }
 

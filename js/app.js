@@ -158,6 +158,7 @@ addEventListener('pointerup', (e) => {
   if (!down) return;
   const d = down; down = null;
   if (phase !== 'lit') return;                    // 灯すのは click で(iPhone で音を出せるように)
+  if (st.musicOn && music.tracks.length && (music.audio.paused || !music.playing) && !sleepEnd) { if (music.ctx) music.ctx.resume(); if (!music.playing) music.play(3); }
   const dx = e.clientX - d.x, dy = e.clientY - d.y;
   // 操作が出ているときだけ、左右にはらうと ろうそくが変わる
   if (d.wasOn && Math.abs(dx) > 80 && Math.abs(dy) < Math.abs(dx) * 0.5) {
@@ -327,9 +328,13 @@ async function wake(on) {
   } catch (e) { if (on) $('wakeNote').hidden = false; }
 }
 if (!('wakeLock' in navigator)) $('wakeNote').hidden = false;
+// アプリを閉じたら(ほかのアプリへ・画面を消す)、音楽も すぐ止める。もどったら また流す
+let resumeMusic = false;
+function closeSound() { if (music.pauseNow()) resumeMusic = true; refreshLabels(); }
+addEventListener('pagehide', closeSound);
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { scene.stop(); return; }
-  if (music.ctx && music.ctx.state !== 'running' && music.playing) music.ctx.resume();
+  if (document.hidden) { scene.stop(); closeSound(); return; }
+  if (resumeMusic && phase === 'lit') { resumeMusic = false; if (music.ctx) music.ctx.resume(); music.play(3); }
   if (phase === 'slept') {
     // 暗くなる途中で離れていたら、真っ暗にしておく
     scene.fade = scene.fadeTarget = 1; scene.draw();

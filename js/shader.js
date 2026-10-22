@@ -33,6 +33,7 @@ const float K  = 0.2;    // 見下ろす角度(上の面のだ円のつぶれ具
 const float DW = 22.0;   // 壁までの距離
 const float YJ = 4.4;    // 壁と台のさかい目(画面上の高さ) = K*DW
 float gSide = 0.0;
+float gNoFlame = 0.0;    // 1 = 炎は描かない(映り込みのぼかし用)
 float gRefl = 0.0;       // 1 = 映り込みを描いている(上の面は映らない)       // いま描いた点が ろうそくの手前の横の面か(炎や芯をかくすため)
 
 float hash(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
@@ -504,7 +505,7 @@ vec3 objects(vec2 p, out float cover){
   vec4 w = wick(p);
   w.a *= 1.0 - front;
   col = mix(col, w.rgb, w.a); cover = max(cover, w.a);
-  col += flameEmit(p)*(1.0 - max(front, gRefl*cover));
+  if (gNoFlame < 0.5) col += flameEmit(p)*(1.0 - max(front, gRefl*cover));
   return col;
 }
 
@@ -522,19 +523,30 @@ void main(){
     float Rb0 = uHold.x > 0.5 ? max(holderR(0.01), 0.1) : uBody.z;
     float yb = -K*sqrt(max(Rb0*Rb0 - p.x*p.x, 0.0));
     if (p.y < yb + 0.02){
-      float rough = (vnoise(vec2(p.x*0.8, p.y*0.5)) - 0.5)*0.025*(-p.y);
+      // 漆の面は 鏡ほど平らではない → 3か所を少しずらして見て 平均し、ぼかす(遠いほど強く ぼける)
+      float dist = yb - p.y;
+      float rough = (vnoise(vec2(p.x*0.8, p.y*0.5)) - 0.5)*0.04*dist;
       vec2 pm = vec2(p.x + rough, 2.0*yb - p.y);
-      float cv;
-      gRefl = 1.0;
-      vec3 rc = objects(pm, cv) + halo(pm)*0.6;
+      float spread = 0.06 + dist*0.09;
+      float cv, cv1, cv2, cv3;
+      gRefl = 1.0; gNoFlame = 1.0;
+      vec3 rc = objects(pm + vec2(-spread, 0.3*spread), cv1)
+              + objects(pm + vec2(0.0, -0.4*spread), cv2)
+              + objects(pm + vec2(spread, 0.3*spread), cv3);
+      gNoFlame = 0.0;
+      // 炎は1か所だけ うすく(ずらして重ねると 炎が いくつにも見えるため)。ゆらぎで にじませる
+      vec2 pf = pm + vec2((vnoise(vec2(p.y*1.5, uTime*0.5)) - 0.5)*0.08*dist, 0.0);
+      vec3 rf = flameEmit(pf)*(1.0 - (cv1 + cv2 + cv3)/3.0);
       gRefl = 0.0;
-      float fall = exp(p.y/22.0);
-      col = mix(col, col*0.3, cv*0.5);
-      col += rc*0.38*fall;
+      rc = rc/3.0 + rf*0.22 + halo(pm)*0.35;
+      cv = (cv1 + cv2 + cv3)/3.0;
+      float fall = exp(-dist/9.0);
+      col = mix(col, col*0.5, cv*0.4*fall);
+      col += rc*0.2*fall;
       // 縦に のびる ぼんやりした光の帯
       float dx = (p.x - uLP.x)/(uFlame.y*1.3 + 0.2);
       float dyv = (p.y + uLP.y)/(uFlame.x*2.6 + 2.0);
-      col += lightCol()*uLight.x*uFlameP.x*0.0012*exp(-dx*dx - dyv*dyv);
+      col += lightCol()*uLight.x*uFlameP.x*0.0009*exp(-dx*dx - dyv*dyv);
     }
   }
 

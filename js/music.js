@@ -86,6 +86,16 @@ export class Music {
     this.changed();
   }
 
+  // アプリを閉じたとき: すぐ止める(「かけていた」ことは覚えたまま)
+  pauseNow() {
+    if (!this.playing) return false;
+    this.playing = false;
+    clearTimeout(this.gapTimer);
+    if (this.gain) { this.gain.gain.cancelScheduledValues(0); this.gain.gain.value = 0; }
+    this.audio.pause();
+    return true;
+  }
+
   toggle() { this.playing ? this.stop() : this.play(); }
 
   setVolume(v) {
