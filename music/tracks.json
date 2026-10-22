@@ -1,3 +1,9 @@
 [
-  { "file": "01-candle-flame-meditation.mp3", "title": "Candle Flame Meditation", "gain": 0.6 }
+  { "file": "01-candle-flame-meditation.mp3", "title": "灯心", "gain": 0.6 },
+  { "file": "02-moonlight-over-still-water.mp3", "title": "水月", "gain": 0.64 },
+  { "file": "03-dawn-in-the-sacred-forest.mp3", "title": "朝の杜", "gain": 0.67 },
+  { "file": "04-midnight-forest-chimes.mp3", "title": "夜の鈴", "gain": 0.66 },
+  { "file": "05-temple-bell-meditation.mp3", "title": "晩鐘", "gain": 0.62 },
+  { "file": "06-cathedral-silence.mp3", "title": "しじま", "gain": 0.63 },
+  { "file": "07-distant-galactic-signal.mp3", "title": "星便り", "gain": 0.68 }
 ]

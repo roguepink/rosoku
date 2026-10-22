@@ -12,6 +12,15 @@
 
 - 曲が1つもないとき(`[]` のとき)は、画面に「音楽」のボタンは出ない。
 - 曲の終わり 8秒は自動で小さくなり、3秒しずかにしてから次の曲へ。
-- 音の大きさは -18 LUFS くらいにそろえる。大きい曲は `"gain": 0.74` のように書くと、その曲だけ小さく流れる(0.74 = -15.4 LUFS の曲を -18 にそろえる値)。
-  はかり方: `ffmpeg -i 曲.mp3 -af ebur128=framelog=quiet -f null -` の Integrated loudness。gain = 10^((-18 - その値)/20)
+- 音の大きさは そろえる(2026-10-22 ノブさんの「少し小さく」で、目安は -19.8 LUFS)。大きい曲は `"gain": 0.74` のように書くと、その曲だけ小さく流れる(0.74 = -15.4 LUFS の曲を -18 にそろえる値)。
+  はかり方: `ffmpeg -i 曲.mp3 -af ebur128=framelog=quiet -f null -` の Integrated loudness。gain = 10^((-19.8 - その値)/20)
 - 1曲 3〜5MB くらいにしておくと、スマホで流しやすい。
+
+## 曲名(Suno の英語名 → アプリの名前)
+- Candle Flame Meditation → 灯心(とうしん)
+- Moonlight over Still Water → 水月(すいげつ)
+- Dawn in the Sacred Forest → 朝の杜(あさのもり)
+- Midnight Forest Chimes → 夜の鈴(よるのすず)
+- Temple Bell Meditation → 晩鐘(ばんしょう)
+- Cathedral Silence → しじま
+- Distant Galactic Signal → 星便り(ほしだより)
