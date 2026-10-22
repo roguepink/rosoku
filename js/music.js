@@ -57,6 +57,8 @@ export class Music {
   }
 
   src(i) { return 'music/' + this.tracks[i].file; }
+  // 曲ごとの音の大きさの そろえ(tracks.json の gain。なければ 1)
+  level() { const t = this.tracks[this.idx]; return this.volume * (t && t.gain ? t.gain : 1); }
 
   // 画面にふれたとき(ユーザーの操作の中)で呼ぶこと
   play(fade = FADE_IN) {
@@ -68,7 +70,7 @@ export class Music {
     if (this.gain) this.gain.gain.value = 0; else this.audio.volume = 0;
     const p = this.audio.play();
     if (p && p.catch) p.catch(() => {});
-    this.ramp(this.volume, fade);
+    this.ramp(this.level(), fade);
     this.playing = true;
     this.meta();
     this.changed();
@@ -88,7 +90,7 @@ export class Music {
 
   setVolume(v) {
     this.volume = v;
-    if (this.playing && !this.tailing) this.ramp(v, 0.15);
+    if (this.playing && !this.tailing) this.ramp(this.level(), 0.15);
   }
 
   // ゆっくり小さくして止める(おやすみの終わり)
@@ -131,7 +133,7 @@ export class Music {
       this.loaded = this.idx;
       const p = this.audio.play();
       if (p && p.catch) p.catch(() => {});
-      this.ramp(this.volume, 3);
+      this.ramp(this.level(), 3);
       this.meta();
       this.changed();
     }, GAP * 1000);
