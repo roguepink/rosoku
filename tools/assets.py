@@ -19,7 +19,7 @@ with socketserver.ThreadingTCPServer(("127.0.0.1", 0), functools.partial(H, dire
         br = p.chromium.launch(executable_path=CHROME, headless=True, args=["--mute-audio", "--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"])
         # アイコン: 場面そのものから切りぬく(小さな灯。土壁の光のたまり と 漆の映り込み)
         pg = br.new_page(viewport={"width": 600, "height": 900}, device_scale_factor=2)
-        pg.goto(f"{base}/tools/view.html?c=5&sway=0&b=2"); time.sleep(3)
+        pg.goto(f"{base}/tools/view.html?c={ids.index('tea')}&sway=0&b=2"); time.sleep(3)   # アイコンは いつも「小さな灯」
         pos = pg.evaluate("""(() => { const s = __s, cv = s.canvas, f = s.framing(cv.width, cv.height), d = s.candleDims(), c = d.c;
           const top = c.holder.H + d.H; const fy = top - c.depth + d.wl*0.55 + d.fh*0.45;
           return { x: f.ox / cv.width, y: 1 - (f.oy + fy * f.S) / cv.height, s: f.S / cv.height, fh: d.fh }; })()""")
