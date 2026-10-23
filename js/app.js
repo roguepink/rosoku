@@ -1,10 +1,10 @@
 // 一灯 — 画面の動き(灯す・操作を出す/かくす・おやすみ・音楽・覚えておく)
-import { Scene } from './scene.js';
+import { Scene } from './vscene.js';   // 2026-10-23 から動画で見せる(前の scene.js は計算で描く版)
 import { Music } from './music.js';
-import { CANDLES, SIZES, SWAYS, WARMTH } from './candles.js';
+import { CANDLES, SIZES, WARMTH } from './candles.js';
 
 const $ = (id) => document.getElementById(id);
-const KEY = 'itto-v1';
+const KEY = 'itto-v2';   // 動画版で 明るさの段階が変わったので、覚えた設定を新しくする
 const SLEEPS = [
   { min: 0, name: 'なし' }, { min: 5, name: '5分' }, { min: 10, name: '10分' }, { min: 15, name: '15分' }, { min: 30, name: '30分' },
   { min: 40, name: 'お線香一本（40分）' }, { min: 60, name: '60分' }, { min: 90, name: '90分' },
@@ -14,7 +14,7 @@ const TOUCH_TO_LIGHT = 'ふれると、灯がともります';
 // ---------- 覚えておく ----------
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const st = Object.assign(
-  { candle: 0, size: 1, sway: reduce ? 0 : 1, bright: 1, warm: 1, vol: 40, order: 'random', musicOn: false, track: 0, hints: 0 },
+  { candle: 0, size: 1, bright: 2, warm: 1, vol: 40, order: 'random', musicOn: false, track: 0, hints: 0 },
   load()
 );
 function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
@@ -22,11 +22,9 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (
 
 // ---------- 場面 ----------
 let scene;
-try { scene = new Scene($('scene')); } catch (e) {
-  document.body.insertAdjacentHTML('beforeend', '<p class="hint on" style="top:40%;bottom:auto">この端末では、ろうそくを描けませんでした。<br>Safari や Chrome で開きなおしてみてください。</p>');
-  throw e;
-}
-scene.set({ candle: st.candle, size: st.size, sway: st.sway, bright: st.bright, warm: st.warm });
+scene = new Scene($('scene'));
+if (st.candle >= CANDLES.length) st.candle = 0;
+scene.set({ candle: st.candle, size: st.size, bright: st.bright, warm: st.warm });
 scene.fadeIn = 3.0;
 scene.fadeTarget = 0;
 scene.start();
@@ -227,7 +225,6 @@ function choices(el, items, get, set) {
   });
   el._get = get;
 }
-choices($('swayChoices'), SWAYS, () => st.sway, (i) => { st.sway = i; scene.set({ sway: i }); });
 choices($('sizeChoices'), SIZES, () => st.size, (i) => { st.size = i; scene.set({ size: i }); });
 choices($('brightChoices'), [7, 9, 11, 13, 15].map((px, i) => ({ html: `<i style="width:${px}px;height:${px}px;opacity:${0.45 + i * 0.13}"></i>`, label: `明るさ ${i + 1}` })),
   () => st.bright, (i) => { st.bright = i; scene.set({ bright: i }); });
