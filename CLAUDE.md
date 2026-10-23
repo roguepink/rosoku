@@ -18,21 +18,27 @@
 - 開くたびに「ふれると、灯がともります」→ ふれて灯す(この最初のタッチで 音楽・画面つけっぱなしも始められる。スマホの決まりのため)。
 - 詳しい理由は docs/design.md。
 
+## 2026-10-23 動画版に作り替え(ノブさんの指示)
+- ろうそくは Higgsfield で作った **本物そっくりの動画** で見せる(前の「計算で描く絵」= shader.js / scene.js はやめた。git の歴史に残っている)。
+- 1灯ごとに: 炎の動画 10秒(Kling 3.0 std・最初と最後が同じ絵で くり返しても つなぎ目が出ない)/ 火がついた静止画 / 火が消えた静止画。
+- 消え方は「案1」: 最後の30秒で動画を暗く → 火が消えた静止画へ → 計算で描く煙(js/vscene.js)→ 15秒で真っ黒。
+  (案2「AIの消える動画」も試したが、最後に炎が大きく戻って ふっと消え、煙もほぼ出なかった)
+- 「ゆれ」の設定は なくした(動画の自然なゆれ)。大きさ = 炎のあたりを中心に拡大。明るさ・色あい = 動画に色の効果をかける。
+- 作り方: 指示文は tools/hf_prompts.py、そろえ方は tools/media.py(urls.json → media/ と icons/thumb と js/candles.js)。くらべ動画 tools/demo_end.py。
+- かかったクレジット(2026-10-23): 静止画 約10、動画 20本 300、消える動画の試し 7.5。
+
 ## しくみ
 - ビルドなし。`index.html` + `css/app.css` + `js/`(ES modules)。GitHub Pages でそのまま動く。
-- `js/shader.js` … 場面ぜんぶを 1枚のシェーダー(WebGL1)で描く。単位は cm。壁・漆・燭台・ろうそく・芯・炎・映り込み・煙。
-- `js/scene.js` … 炎の動き(ゆっくりの揺れ+風+ちらつき+和ろうそくの息)と、シェーダーへの受け渡し。重いときは自動で解像度を下げる。
-- `js/candles.js` … ろうそくの寸法・色・絵(motif)・金箔・台・かさ(cover)。書き方は ファイルの先頭。ここを直せば見た目が変わる。
-  ろうそくを足したら `tools/assets.py` で見本画像を作り、`sw.js` の FILES と VERSION も直す。
+- `js/vscene.js` … 動画で見せる場面(火が消えた静止画 → 炎の動画 → 煙 → 黒い幕)。app.js からの使い方は前の Scene と同じ。
+- `media/v` 炎の動画、`media/s` 火がついた静止画、`media/u` 火が消えた静止画(どれも 716x1280)。
+- `js/candles.js` … 20灯の名前と 芯の先の位置(煙が出る所)。tools/media.py が作る。
 - `js/music.js` … 曲。`music/tracks.json` に書いた曲を流す(書き方は music/README.md)。曲がないときは音楽ボタンを出さない。
 - `js/app.js` … 画面の動き・おやすみ・設定の記憶(localStorage `itto-v1`)。
 - `sw.js` … 電波がなくても開ける。ファイルを増やしたら FILES と VERSION を直す。
 
 ## 確かめ方(Mac の Chrome を画面なし・音なしで使う)
-- `~/.local/venvs/ryokoshi/bin/python tools/shot.py "tools/view.html?c=0"` … ろうそくだけ撮る(c=0〜5, sway, b, w, size)
 - `tools/ui.py` … アプリを開いて操作の画面を順に撮る
 - `tools/flow.py` … 音楽(テスト音)と おやすみの終わりまで(約2分)。`--quick` で音楽だけ
-- `tools/assets.py` … アイコン・見本画像・共有画像を作りなおす
 - 写真は `_check/`(Git に入れない)
 
 ## 専門家の見直し(2回目, 2026-10-22)で直したこと
