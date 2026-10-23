@@ -197,7 +197,8 @@ CANDLES.forEach((c, i) => {
   const b = document.createElement('button');
   b.innerHTML = `<img src="icons/thumb-${c.id}.jpg" alt="" loading="lazy"><span>${c.short}</span>`;
   b.setAttribute('aria-label', c.name);
-  b.addEventListener('click', () => changeCandle(i));
+  // 選んだら 板を閉じて、操作もゆっくり消す → ろうそくが 画面いっぱいに やさしく出てくる(one candle と同じ)
+  b.addEventListener('click', () => { changeCandle(i); openSheet(null); hideUI(); });
   thumbs.appendChild(b);
 });
 let switching = 0;

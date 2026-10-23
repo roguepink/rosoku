@@ -107,9 +107,9 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 .tracks li button .mark { width: 10px; color: var(--amber); }
 .tracks li button[aria-current="true"] { color: var(--amber); opacity: 1; }
 
-.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(66px, 1fr)); gap: 12px 10px; padding-bottom: 2px; }
+.thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; padding-bottom: 2px; }   /* 3列(5列は見づらい。2026-10-24 ノブさん) */
 .thumbs::-webkit-scrollbar { display: none; }
-.thumbs button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; letter-spacing: 0; opacity: 0.78; }
+.thumbs button { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 15px; letter-spacing: 0.02em; opacity: 0.85; }
 .thumbs img { width: 100%; height: auto; aspect-ratio: 152 / 200; object-fit: cover; display: block; border-bottom: 1px solid transparent; background: #050403; }
 .thumbs button[aria-pressed="true"] { color: var(--amber); opacity: 1; }
 .thumbs button[aria-pressed="true"] img { border-bottom-color: var(--amber); }
