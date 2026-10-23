@@ -27,6 +27,7 @@ html, body {
 .scene .stage { position: absolute; }
 .scene .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .scene .lit { opacity: 0; }
+.scene .src { opacity: 0; pointer-events: none; }   /* 動画は WebGL の材料。直接は見せない */
 .scene .black { position: absolute; inset: 0; background: #000; pointer-events: none; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; letter-spacing: inherit; }
 button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); outline-offset: 3px; }
