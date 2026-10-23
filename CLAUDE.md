@@ -27,6 +27,12 @@
 - 作り方: 指示文は tools/hf_prompts.py、そろえ方は tools/media.py(urls.json → media/ と icons/thumb と js/candles.js)。くらべ動画 tools/demo_end.py。
 - かかったクレジット(2026-10-23): 静止画 約10、動画 20本 300、消える動画の試し 7.5。
 
+## 炎に動きを足す(2026-10-23 夜・ノブさんが案A を選んだ)
+- AI の動画は 炎がほとんど動かなかった(10本はほぼ止まって見えた)。そこで 動画を WebGL で描きなおしながら、炎の所だけ ゆらす・のび縮み・明かりのちらつきを足す(js/vscene.js の FlameSim と FS)。クレジットは使っていない。
+- 「ゆれ」の設定(しずか/ゆらぎ/そよ風)を もどした。行灯・雪洞・竹あかりは 炎が見えないので、明かりの ゆらぎだけ。
+- js/candles.js の flame(炎の位置と大きさ)・breath は手で足した。**tools/media.py を走らせなおすと消える**ので、走らせたら足しなおす。
+- WebGL が使えない端末では、動画をそのまま見せる。
+
 ## しくみ
 - ビルドなし。`index.html` + `css/app.css` + `js/`(ES modules)。GitHub Pages でそのまま動く。
 - `js/vscene.js` … 動画で見せる場面(火が消えた静止画 → 炎の動画 → 煙 → 黒い幕)。app.js からの使い方は前の Scene と同じ。
