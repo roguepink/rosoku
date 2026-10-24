@@ -33,6 +33,11 @@
 - js/candles.js の flame(炎の位置と大きさ)・breath は手で足した。**tools/media.py を走らせなおすと消える**ので、走らせたら足しなおす。
 - WebGL が使えない端末では、動画をそのまま見せる。
 
+## iPhone で「開けない」(2026-10-24 ノブさん)
+- 原因: iPhone の Safari は、ボタン以外の所をタップしても click を出さないことがある → 「ふれると、灯がともります」から進めなかった。
+- 直し: 灯す・もう一度ともす を pointerup(指を離したとき)で行う(app.js の tapIdle)。#scene に cursor: pointer。click はパソコン用に残し、直後の二重は止める。
+- 確かめ方: Playwright の WebKit + devices["iPhone 13"] で touchscreen.tap → __itto.phase が lit になるか。
+
 ## しくみ
 - ビルドなし。`index.html` + `css/app.css` + `js/`(ES modules)。GitHub Pages でそのまま動く。
 - `js/vscene.js` … 動画で見せる場面(火が消えた静止画 → 炎の動画 → 煙 → 黒い幕)。app.js からの使い方は前の Scene と同じ。

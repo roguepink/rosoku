@@ -159,7 +159,12 @@ addEventListener('pointercancel', () => { down = null; });
 addEventListener('pointerup', (e) => {
   if (!down) return;
   const d = down; down = null;
-  if (phase !== 'lit') return;                    // 灯すのは click で(iPhone で音を出せるように)
+  // 2026-10-24: iPhone の Safari は、ボタン以外の所をタップしても click を出さないことがある(「開かない」と言われた原因)。
+  // 灯す・もう一度ともす は、指を離したとき(pointerup)に行う。pointerup は iPhone でも「ふれた」扱いなので 音も出せる
+  if (phase !== 'lit') {
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) <= 20) { tappedAt = performance.now(); tapIdle(); }
+    return;
+  }
   if (st.musicOn && music.tracks.length && (music.audio.paused || !music.playing) && !sleepEnd) { if (music.ctx) music.ctx.resume(); if (!music.playing) music.play(3); }
   const dx = e.clientX - d.x, dy = e.clientY - d.y;
   // 操作が出ているときだけ、左右にはらうと ろうそくが変わる
@@ -172,14 +177,20 @@ addEventListener('pointerup', (e) => {
   if (!uiOn) showUI();
   else if (performance.now() - uiAt > 300) hideUI();
 });
-addEventListener('click', (e) => {
-  if (e.button > 0 || e.target.closest('.bar, .sheet, .relight')) return;
+let tappedAt = -1e9;
+function tapIdle() {
   if (phase === 'dark' || phase === 'out') lightUp();
   else if (phase === 'slept') {
     $('relight').hidden = false;
     clearTimeout(relightT);
     relightT = setTimeout(() => { $('relight').hidden = true; }, 10000);   // 暗い寝室で 光りつづけないように
   }
+}
+// パソコン(マウス)・キーボード用。指で灯した直後の click は 二重にしない
+addEventListener('click', (e) => {
+  if (e.button > 0 || e.target.closest('.bar, .sheet, .relight')) return;
+  if (performance.now() - tappedAt < 800) return;
+  if (phase !== 'lit') tapIdle();
 });
 $('relight').addEventListener('click', () => { scene.fadeOut = 1.2; lightUp(); });
 // パソコン: マウスを動かすと操作が出る

@@ -57,6 +57,8 @@ button:focus-visible, input:focus-visible { outline: 1px solid var(--amber); out
 .ui.on { opacity: 1; transition-duration: 0.45s; }
 .ui.on .bar, .ui.on .sheet:not([hidden]), .ui.fading .bar, .ui.fading .sheet:not([hidden]) { pointer-events: auto; }
 body.nocursor { cursor: none; }
+/* iPhone の Safari は「押せる所」と分からないと タップを受け取らないことがあるので、場面を押せる所にしておく */
+#scene { cursor: pointer; }
 
 .bar {
   position: absolute; left: 0; right: 0; bottom: 0;
