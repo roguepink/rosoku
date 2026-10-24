@@ -4,6 +4,15 @@
 export const MEDIA_V = 2;   // 絵と動画を作り直したら上げる
 export const CANDLES = [
   { id: 'wa-shiro', name: '白の和ろうそく', short: '和ろうそく', tip: [0.4986, 0.5031], smoke: true, flame: [0.5014, 0.3867, 0.4961, 0.0381], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'shu', name: '朱ろうそく', short: '朱', tip: [0.5042, 0.4102], smoke: true, flame: [0.5014, 0.277, 0.4, 0.0436], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'botan', name: '絵ろうそく・牡丹', short: '牡丹', tip: [0.4944, 0.4156], smoke: true, flame: [0.5, 0.3113, 0.3992, 0.0545], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'andon', name: '行灯', short: '行灯', tip: [0.5, 0.5352], smoke: false, flame: [0.5, 0.5102, 0.5609, 0.0782], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'take', name: '竹あかり', short: '竹あかり', tip: [0.5, 0.5461], smoke: false, flame: [0.4972, 0.4758, 0.6058, 0.0698], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'kin', name: '金ろうそく', short: '金', tip: [0.4972, 0.3734], smoke: true, flame: [0.5, 0.2194, 0.3492, 0.0472], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'wa-e', name: '絵ろうそく・椿', short: '椿', tip: [0.493, 0.4234], smoke: true, flame: [0.4972, 0.3254, 0.4055, 0.0599], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'bonbori', name: '雪洞', short: '雪洞', tip: [0.5, 0.3727], smoke: false, flame: [0.4148, 0.3445, 0.4102, 0.1802], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'kinari', name: '生成りのろうそく', short: '生成り', tip: [0.4972, 0.4484], smoke: true, flame: [0.5, 0.2852, 0.4297, 0.0508], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'toumyou', name: '灯明皿', short: '灯明皿', tip: [0.5154, 0.5305], smoke: true, flame: [0.5154, 0.464, 0.5305, 0.06], breath: { amp: 0.05, freq: 0.25 } },
 ];
 
 // ゆれの3段階(動画の炎に、さらに足す動き)。lean = 傾き、height = のび縮み

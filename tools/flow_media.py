@@ -68,6 +68,24 @@ def flame_of(lit, cid):
     return [round(cx, 4), round(top, 4), round(base, 4), round(w, 4)]
 
 
+def loop_video(src, dst, fade=12):
+    """くり返しのつなぎ目を消す: 最後の fade こまを、はじめの fade こまに だんだん重ねて、最後の fade こまは捨てる。
+    → 出来上がりの最後のこま(元の n-fade-1)のあとに、はじめのこま(ほぼ元の n-fade)が来るので、つなぎ目がない"""
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(src), "-an", "-vf",
+                          f"fps=24,scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}",
+                          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
+    f = np.frombuffer(raw, np.uint8).reshape(-1, H, W, 3)
+    n = len(f)
+    out = np.empty((n - fade, H, W, 3), np.uint8)
+    out[fade:] = f[fade:n - fade]
+    for i in range(fade):
+        w = (i + 0.5) / fade
+        out[i] = (f[n - fade + i].astype(np.float32) * (1 - w) + f[i].astype(np.float32) * w + 0.5).astype(np.uint8)
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", "24", "-i", "-",
+                    "-c:v", "libx264", "-crf", "23", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(dst)],
+                   input=out.tobytes(), check=True)
+
+
 def breath_of(cid):
     if cid in WA:
         return "{ amp: 0.10, freq: 0.12 }"
@@ -84,10 +102,7 @@ def main():
         v, s, u = RAW / f"{cid}.mp4", RAW / f"{cid}-lit.jpg", RAW / f"{cid}-unlit.jpg"
         if not (v.exists() and s.exists() and u.exists()):
             missing.append(cid); continue
-        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(v), "-an",
-                        "-vf", f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}",
-                        "-c:v", "libx264", "-crf", "23", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
-                        str(ROOT / f"media/v/{cid}.mp4")], check=True)
+        loop_video(v, ROOT / f"media/v/{cid}.mp4")
         lit = Image.open(s).convert("RGB").resize((W, H), Image.LANCZOS)
         unl = Image.open(u).convert("RGB").resize((W, H), Image.LANCZOS)
         lit.save(ROOT / f"media/s/{cid}.jpg", quality=84)
