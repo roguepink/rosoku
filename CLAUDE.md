@@ -33,11 +33,25 @@
 - js/candles.js の flame(炎の位置と大きさ)・breath は手で足した。**tools/media.py を走らせなおすと消える**ので、走らせたら足しなおす。
 - WebGL が使えない端末では、動画をそのまま見せる。
 
+## iPhone で「開けない」(2026-10-24 ノブさん)
+- 原因: iPhone の Safari は、ボタン以外の所をタップしても click を出さないことがある → 「ふれると、灯がともります」から進めなかった。
+- 直し: 灯す・もう一度ともす を pointerup(指を離したとき)で行う(app.js の tapIdle)。#scene に cursor: pointer。click はパソコン用に残し、直後の二重は止める。
+- 確かめ方: Playwright の WebKit + devices["iPhone 13"] で touchscreen.tap → __itto.phase が lit になるか。
+
+## 2026-10-24 Google Flow で21灯を作り直し(ノブさん「確認なしで公開まで」)
+- 背景を ろうそくごとに合う場所に(床の間・神社・蔵・旅館・竹林・金屏風・雪の縁側・ひな壇・土間・山寺・丸窓・書院・廊下・本堂・雨の窓・文机・工房・茶室・石蔵・書斎・墨色の壁)。
+- 21本目「ねじりろうそく」(形が変わった ふつうのろうそく。だるま型は「ものを燃やすのは良くない」でやめた)。選ぶ画面 3列×7段が ちょうど うまる。
+- 作り方: Mac の Chrome を Claude in Chrome で動かして Flow を使う。画像 Nano Banana Pro(0クレジット)→ 同じ画像を直して 火が消えた画像 → 動画 Veo 3.1 Lite 8秒(フレーム: 開始=終了=火がついた画像、10クレジット)。合計 210 クレジット(Flow 1,050→840)。
+- 指示文は tools/flow_prompts.py、そろえ方は tools/flow_media.py(_check/flow/raw/<id>-lit.jpg / -unlit.jpg / .mp4 → media・icons・js/candles.js。炎の箱も自動で出す。くり返しのつなぎ目は 最後の0.5秒を はじめに重ねて消す)。炎の箱の確かめは tools/check_boxes.py。ダウンロードを写すのは tools/grab.py。
+- 人のペースで作る決まり(~/.claude/scripts/hito-pace.py)で、1時間12回まで → 約6時間かかった。
+- Flow の画像一覧の検索は 部分一致(「ume-lit」で hyakume-lit も出る)。選ぶ前に名前を見る。
+- スマホに覚えた古い絵を使わないよう、絵と動画の URL に ?v=MEDIA_V(js/candles.js と sw.js)。作り直したら両方 上げる。
+
 ## しくみ
 - ビルドなし。`index.html` + `css/app.css` + `js/`(ES modules)。GitHub Pages でそのまま動く。
 - `js/vscene.js` … 動画で見せる場面(火が消えた静止画 → 炎の動画 → 煙 → 黒い幕)。app.js からの使い方は前の Scene と同じ。
 - `media/v` 炎の動画、`media/s` 火がついた静止画、`media/u` 火が消えた静止画(どれも 716x1280)。
-- `js/candles.js` … 20灯の名前と 芯の先の位置(煙が出る所)。tools/media.py が作る。
+- `js/candles.js` … 21灯の名前・芯の先・炎の箱。tools/flow_media.py が作る(tools/media.py は前の Higgsfield 版)。
 - `js/music.js` … 曲。`music/tracks.json` に書いた曲を流す(書き方は music/README.md)。曲がないときは音楽ボタンを出さない。
 - `js/app.js` … 画面の動き・おやすみ・設定の記憶(localStorage `itto-v1`)。
 - `sw.js` … 電波がなくても開ける。ファイルを増やしたら FILES と VERSION を直す。

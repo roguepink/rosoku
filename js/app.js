@@ -1,7 +1,7 @@
 // 一灯 — 画面の動き(灯す・操作を出す/かくす・おやすみ・音楽・覚えておく)
 import { Scene } from './vscene.js';   // 2026-10-23 から動画で見せる(前の scene.js は計算で描く版)
 import { Music } from './music.js';
-import { CANDLES, SIZES, SWAYS, WARMTH } from './candles.js';
+import { CANDLES, SIZES, SWAYS, WARMTH, MEDIA_V } from './candles.js';
 
 const $ = (id) => document.getElementById(id);
 const KEY = 'itto-v2';   // 動画版で 明るさの段階が変わったので、覚えた設定を新しくする
@@ -206,7 +206,7 @@ addEventListener('focusin', (e) => { if (e.target.closest && e.target.closest('#
 const thumbs = $('thumbs');
 CANDLES.forEach((c, i) => {
   const b = document.createElement('button');
-  b.innerHTML = `<img src="icons/thumb-${c.id}.jpg" alt="" loading="lazy"><span>${c.short}</span>`;
+  b.innerHTML = `<img src="icons/thumb-${c.id}.jpg?v=${MEDIA_V}" alt="" loading="lazy"><span>${c.short}</span>`;
   b.setAttribute('aria-label', c.name);
   // 選んだら 板を閉じて、操作もゆっくり消す → ろうそくが 画面いっぱいに やさしく出てくる(one candle と同じ)
   b.addEventListener('click', () => { changeCandle(i); openSheet(null); hideUI(); });
