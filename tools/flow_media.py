@@ -92,6 +92,10 @@ def main():
         unl.save(ROOT / f"media/u/{cid}.jpg", quality=84)
         tx, ty = tip_of(lit, unl, cid)
         fl = flame_of(lit, cid)
+        if cid in COVERED:
+            tx = 0.5                        # かさの中の灯り: 明るい所が片よっても 大きくする中心は まん中
+        elif abs(tx - fl[0]) > 0.03:        # 芯の先が 炎から はずれたら 炎の根元にする
+            tx, ty = fl[0], fl[2]
         # 見本: 灯りのまわりを 3:4 に切りぬく(選ぶ画面は3列なので大きめに)
         ch = int(H * 0.62); cw = int(ch * 3 / 4)
         cy = int(min(max(ty * H + ch * 0.12, ch / 2), H - ch / 2)); cx = W // 2
@@ -114,4 +118,5 @@ def main():
     print("ok", len(rows))
 
 
-main()
+if __name__ == "__main__":
+    main()
