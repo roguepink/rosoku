@@ -13,6 +13,17 @@ export const CANDLES = [
   { id: 'bonbori', name: '雪洞', short: '雪洞', tip: [0.5, 0.3727], smoke: false, flame: [0.4148, 0.3445, 0.4102, 0.1802], breath: { amp: 0.03, freq: 0.18 } },
   { id: 'kinari', name: '生成りのろうそく', short: '生成り', tip: [0.4972, 0.4484], smoke: true, flame: [0.5, 0.2852, 0.4297, 0.0508], breath: { amp: 0.10, freq: 0.12 } },
   { id: 'toumyou', name: '灯明皿', short: '灯明皿', tip: [0.5154, 0.5305], smoke: true, flame: [0.5154, 0.464, 0.5305, 0.06], breath: { amp: 0.05, freq: 0.25 } },
+  { id: 'ume', name: '絵ろうそく・梅', short: '梅', tip: [0.4972, 0.382], smoke: true, flame: [0.5, 0.2725, 0.3648, 0.049], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'kiku', name: '絵ろうそく・菊', short: '菊', tip: [0.4972, 0.3953], smoke: true, flame: [0.4986, 0.2947, 0.3758, 0.0545], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'teshoku', name: '手燭(ガラスのほや)', short: '手燭', tip: [0.4986, 0.4859], smoke: true, flame: [0.4986, 0.4143, 0.5043, 0.0581], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'hyakume', name: '百匁ろうそく', short: '百匁', tip: [0.4735, 0.432], smoke: true, flame: [0.4972, 0.269, 0.4279, 0.0563], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'ayame', name: '絵ろうそく・あやめ', short: 'あやめ', tip: [0.4986, 0.3695], smoke: true, flame: [0.5, 0.2449, 0.3409, 0.0525], breath: { amp: 0.10, freq: 0.12 } },
+  { id: 'mame', name: '豆ろうそく', short: '豆', tip: [0.5014, 0.4727], smoke: true, flame: [0.5, 0.4176, 0.5055, 0.0327], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'mitsurou', name: '蜜ろう', short: '蜜ろう', tip: [0.5056, 0.5469], smoke: true, flame: [0.5014, 0.4795, 0.5695, 0.06], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'tea', name: '小さな灯（豆皿）', short: '小さな灯', tip: [0.5196, 0.5], smoke: true, flame: [0.507, 0.4246, 0.5146, 0.06], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'hashira', name: '白い柱のろうそく', short: '白い柱', tip: [0.5056, 0.5422], smoke: true, flame: [0.5014, 0.5143, 0.568, 0.06], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'hosoi', name: '細いろうそく', short: '細いろうそく', tip: [0.4986, 0.3852], smoke: true, flame: [0.4986, 0.3143, 0.4043, 0.0527], breath: { amp: 0.03, freq: 0.18 } },
+  { id: 'nejiri', name: 'ねじりろうそく', short: 'ねじり', tip: [0.4874, 0.3766], smoke: true, flame: [0.5, 0.273, 0.3769, 0.0381], breath: { amp: 0.10, freq: 0.12 } },
 ];
 
 // ゆれの3段階(動画の炎に、さらに足す動き)。lean = 傾き、height = のび縮み
