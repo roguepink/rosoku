@@ -63,6 +63,8 @@ def flame_of(lit, cid):
         h = base - top
         top -= h * 0.25                     # 炎の外側の うすい所も入れる
         w = min(max(w * 1.3, 0.016), 0.06)
+        if cid not in WA and base - top > 0.09:   # ろうが光る小さな灯り: 光る ろうまで ゆらさない
+            base = top + 0.09
     return [round(cx, 4), round(top, 4), round(base, 4), round(w, 4)]
 
 
