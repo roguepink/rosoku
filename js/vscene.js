@@ -3,7 +3,7 @@
 // 2026-10-23: AI の動画は炎の動きが小さいので、動画を WebGL で描きなおしながら 炎の所だけ ゆらす・のび縮みさせる・明かりをちらつかせる。
 //   (WebGL が使えない端末では、動画をそのまま見せる)
 // app.js から見た使い方は、前の Scene と同じにしてある(set / light / extinguish / fade / shrink など)。
-import { CANDLES, SIZES, SWAYS, BRIGHT, WARMTH } from './candles.js';
+import { CANDLES, SIZES, SWAYS, BRIGHT, WARMTH, MEDIA_V } from './candles.js';
 
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 function h1(i) { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
@@ -159,9 +159,10 @@ export class Scene {
   loadCandle() {
     const c = CANDLES[this.opt.candle];
     this.loaded = this.opt.candle;
-    this.unlit.src = `media/u/${c.id}.jpg`;
-    this.video.poster = `media/s/${c.id}.jpg`;
-    this.video.src = `media/v/${c.id}.mp4`;
+    const q = `?v=${MEDIA_V}`;   // 作り直したら MEDIA_V を上げる → スマホに覚えた古い絵を使わない
+    this.unlit.src = `media/u/${c.id}.jpg${q}`;
+    this.video.poster = `media/s/${c.id}.jpg${q}`;
+    this.video.src = `media/v/${c.id}.mp4${q}`;
     const p = this.video.play(); if (p && p.catch) p.catch(() => {});
   }
 
