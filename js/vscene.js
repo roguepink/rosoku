@@ -90,9 +90,10 @@ export class Scene {
     this.video.setAttribute('muted', ''); this.video.setAttribute('playsinline', '');
     this.gc = el('canvas', 'layer lit', this.stage);
     this.video.className = 'layer src';
+    // 2026-10-24 ノブさん: Flow の動画は炎が自然に動くので、WebGL で炎をゆらす・部屋の明るさをゆらすのは やめた
+    // (炎のまわりの壁まで ゆがんでいた)。動画を そのまま見せる。もどすときは 下の2行を前の形(initGL)に。
     this.gl = null;
-    try { this.initGL(); } catch (e) { this.gl = null; }
-    if (!this.gl) { this.gc.remove(); this.video.className = 'layer lit'; }
+    this.gc.remove(); this.video.className = 'layer lit';
     this.sim = new FlameSim();
     this.smoke = el('canvas', 'layer smoke', this.stage);
     this.black = el('div', 'black', root);

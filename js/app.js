@@ -237,7 +237,6 @@ function choices(el, items, get, set) {
   });
   el._get = get;
 }
-choices($('swayChoices'), SWAYS, () => st.sway, (i) => { st.sway = i; scene.set({ sway: i }); });
 choices($('sizeChoices'), SIZES, () => st.size, (i) => { st.size = i; scene.set({ size: i }); });
 choices($('brightChoices'), [7, 9, 11, 13, 15].map((px, i) => ({ html: `<i style="width:${px}px;height:${px}px;opacity:${0.45 + i * 0.13}"></i>`, label: `明るさ ${i + 1}` })),
   () => st.bright, (i) => { st.bright = i; scene.set({ bright: i }); });
