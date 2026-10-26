@@ -3,9 +3,9 @@
    - アプリの本体(下の FILES)は、はじめに全部覚える。開くときは まずネットで最新を取りにいき、3秒つながらなければ 覚えているものを出す。
    - 曲(music/)と文字の形(フォント)は、一度流した・表示したものだけ 覚えておく(10曲ぶん 先に全部はダウンロードしない)。
    FILES を変えたときは VERSION を1つ上げる。 */
-const VERSION = 'itto-v8';
+const VERSION = 'itto-v9';
 const MEDIA_V = 2;   // js/candles.js の MEDIA_V と同じにする
-const FILES = ['./', 'index.html', 'css/app.css', 'js/app.js', 'js/vscene.js', 'js/candles.js', 'js/music.js',
+const FILES = ['./', 'index.html', 'install.js', 'shots/1.jpg', 'shots/2.jpg', 'shots/3.jpg', 'shots/4.jpg', 'css/app.css', 'js/app.js', 'js/vscene.js', 'js/candles.js', 'js/music.js',
   'manifest.webmanifest', 'music/tracks.json', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
   'icons/thumb-wa-shiro.jpg?v=' + MEDIA_V, 'icons/thumb-shu.jpg?v=' + MEDIA_V, 'icons/thumb-botan.jpg?v=' + MEDIA_V, 'icons/thumb-andon.jpg?v=' + MEDIA_V, 'icons/thumb-take.jpg?v=' + MEDIA_V, 'icons/thumb-kin.jpg?v=' + MEDIA_V, 'icons/thumb-wa-e.jpg?v=' + MEDIA_V, 'icons/thumb-bonbori.jpg?v=' + MEDIA_V, 'icons/thumb-kinari.jpg?v=' + MEDIA_V, 'icons/thumb-toumyou.jpg?v=' + MEDIA_V, 'icons/thumb-ume.jpg?v=' + MEDIA_V, 'icons/thumb-kiku.jpg?v=' + MEDIA_V, 'icons/thumb-teshoku.jpg?v=' + MEDIA_V, 'icons/thumb-hyakume.jpg?v=' + MEDIA_V, 'icons/thumb-ayame.jpg?v=' + MEDIA_V, 'icons/thumb-mame.jpg?v=' + MEDIA_V, 'icons/thumb-mitsurou.jpg?v=' + MEDIA_V, 'icons/thumb-tea.jpg?v=' + MEDIA_V, 'icons/thumb-hashira.jpg?v=' + MEDIA_V, 'icons/thumb-hosoi.jpg?v=' + MEDIA_V, 'icons/thumb-nejiri.jpg?v=' + MEDIA_V];
 const KEEP = 'itto-keep';   // 曲とフォント(VERSION を上げても消さない)
